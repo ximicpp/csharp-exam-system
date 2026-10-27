@@ -1,0 +1,37 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Exam: debug current question",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "Exam: build current question",
+      "program": "${fileDirname}/bin/Debug/net11.0/${fileDirnameBasename}",
+      "windows": {
+        "program": "${fileDirname}/bin/Debug/net11.0/${fileDirnameBasename}.exe"
+      },
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "DOTNET_ROOT": "${workspaceFolder}/.tools/dotnet11"
+      },
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "Exam: debug current question (Release)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "Exam: build current question (Release)",
+      "program": "${fileDirname}/bin/Release/net11.0/${fileDirnameBasename}",
+      "windows": {
+        "program": "${fileDirname}/bin/Release/net11.0/${fileDirnameBasename}.exe"
+      },
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "DOTNET_ROOT": "${workspaceFolder}/.tools/dotnet11"
+      },
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "dotnet.defaultSolution": "CSharpExam.slnx",
+  "csharp.debug.console": "integratedTerminal",
+  "ilspy.defaultOutputLanguage": "C# 1.0 / VS .NET",
+  "ilspy.showCompilerGeneratedSymbols": true,
+  "[csharp]": {
+    "editor.defaultFormatter": "ms-dotnettools.csharp",
+    "editor.formatOnSave": true
+  },
+  "files.exclude": {
+    "**/obj": true,
+    "**/.tools": true
+  },
+  "files.watcherExclude": {
+    "**/bin/**": true,
+    "**/obj/**": true
+  },
+  "search.exclude": {
+    "**/bin": true,
+    "**/obj": true
+  },
+  "terminal.integrated.env.windows": {
+    "DOTNET_ROOT": "${workspaceFolder}/.tools/dotnet11",
+    "PATH": "${workspaceFolder}/.tools/dotnet11;${env:PATH}",
+    "DOTNET_CLI_TELEMETRY_OPTOUT": "1",
+    "DOTNET_NOLOGO": "1"
+  },
+  "terminal.integrated.env.linux": {
+    "DOTNET_ROOT": "${workspaceFolder}/.tools/dotnet11",
+    "PATH": "${workspaceFolder}/.tools/dotnet11:${env:PATH}",
+    "DOTNET_CLI_TELEMETRY_OPTOUT": "1",
+    "DOTNET_NOLOGO": "1"
+  },
+  "terminal.integrated.env.osx": {
+    "DOTNET_ROOT": "${workspaceFolder}/.tools/dotnet11",
+    "PATH": "${workspaceFolder}/.tools/dotnet11:${env:PATH}",
+    "DOTNET_CLI_TELEMETRY_OPTOUT": "1",
+    "DOTNET_NOLOGO": "1"
+  }
+}

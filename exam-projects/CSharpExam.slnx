@@ -1,0 +1,195 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Solution>
+  <Folder Name="/基础/01 程序结构、类型与数值/">
+    <Project Path="Q01/Q01.csproj" />
+    <Project Path="Q02/Q02.csproj" />
+    <Project Path="Q03/Q03.csproj" />
+    <Project Path="Q04/Q04.csproj" />
+    <Project Path="Q05/Q05.csproj" />
+    <Project Path="Q06/Q06.csproj" />
+    <Project Path="Q07/Q07.csproj" />
+    <Project Path="Q08/Q08.csproj" />
+    <Project Path="Q09/Q09.csproj" />
+    <Project Path="Q10/Q10.csproj" />
+  </Folder>
+  <Folder Name="/基础/02 文本、数组与集合/">
+    <Project Path="Q11/Q11.csproj" />
+    <Project Path="Q12/Q12.csproj" />
+    <Project Path="Q13/Q13.csproj" />
+    <Project Path="Q14/Q14.csproj" />
+    <Project Path="Q15/Q15.csproj" />
+    <Project Path="Q16/Q16.csproj" />
+    <Project Path="Q17/Q17.csproj" />
+    <Project Path="Q18/Q18.csproj" />
+    <Project Path="Q19/Q19.csproj" />
+    <Project Path="Q20/Q20.csproj" />
+  </Folder>
+  <Folder Name="/基础/03 表达式、模式与控制流/">
+    <Project Path="Q21/Q21.csproj" />
+    <Project Path="Q22/Q22.csproj" />
+    <Project Path="Q23/Q23.csproj" />
+    <Project Path="Q24/Q24.csproj" />
+    <Project Path="Q25/Q25.csproj" />
+    <Project Path="Q26/Q26.csproj" />
+    <Project Path="Q27/Q27.csproj" />
+    <Project Path="Q28/Q28.csproj" />
+    <Project Path="Q29/Q29.csproj" />
+    <Project Path="Q30/Q30.csproj" />
+  </Folder>
+  <Folder Name="/基础/04 方法、参数与迭代器/">
+    <Project Path="Q31/Q31.csproj" />
+    <Project Path="Q32/Q32.csproj" />
+    <Project Path="Q33/Q33.csproj" />
+    <Project Path="Q34/Q34.csproj" />
+    <Project Path="Q35/Q35.csproj" />
+    <Project Path="Q36/Q36.csproj" />
+    <Project Path="Q37/Q37.csproj" />
+    <Project Path="Q38/Q38.csproj" />
+    <Project Path="Q39/Q39.csproj" />
+    <Project Path="Q40/Q40.csproj" />
+  </Folder>
+  <Folder Name="/基础/05 对象模型与成员/">
+    <Project Path="Q41/Q41.csproj" />
+    <Project Path="Q42/Q42.csproj" />
+    <Project Path="Q43/Q43.csproj" />
+    <Project Path="Q44/Q44.csproj" />
+    <Project Path="Q45/Q45.csproj" />
+    <Project Path="Q46/Q46.csproj" />
+    <Project Path="Q47/Q47.csproj" />
+    <Project Path="Q48/Q48.csproj" />
+    <Project Path="Q49/Q49.csproj" />
+    <Project Path="Q50/Q50.csproj" />
+  </Folder>
+  <Folder Name="/基础/06 泛型、委托与事件/">
+    <Project Path="Q51/Q51.csproj" />
+    <Project Path="Q52/Q52.csproj" />
+    <Project Path="Q53/Q53.csproj" />
+    <Project Path="Q54/Q54.csproj" />
+    <Project Path="Q55/Q55.csproj" />
+    <Project Path="Q56/Q56.csproj" />
+    <Project Path="Q57/Q57.csproj" />
+    <Project Path="Q58/Q58.csproj" />
+    <Project Path="Q59/Q59.csproj" />
+    <Project Path="Q60/Q60.csproj" />
+  </Folder>
+  <Folder Name="/基础/07 异常、资源与 I/O/">
+    <Project Path="Q61/Q61.csproj" />
+    <Project Path="Q62/Q62.csproj" />
+    <Project Path="Q63/Q63.csproj" />
+    <Project Path="Q64/Q64.csproj" />
+    <Project Path="Q65/Q65.csproj" />
+    <Project Path="Q66/Q66.csproj" />
+    <Project Path="Q67/Q67.csproj" />
+    <Project Path="Q68/Q68.csproj" />
+    <Project Path="Q69/Q69.csproj" />
+    <Project Path="Q70/Q70.csproj" />
+  </Folder>
+  <Folder Name="/基础/08 LINQ 查询与数据关系/">
+    <Project Path="Q71/Q71.csproj" />
+    <Project Path="Q72/Q72.csproj" />
+    <Project Path="Q73/Q73.csproj" />
+    <Project Path="Q74/Q74.csproj" />
+    <Project Path="Q75/Q75.csproj" />
+    <Project Path="Q76/Q76.csproj" />
+    <Project Path="Q77/Q77.csproj" />
+    <Project Path="Q78/Q78.csproj" />
+    <Project Path="Q79/Q79.csproj" />
+    <Project Path="Q80/Q80.csproj" />
+  </Folder>
+  <Folder Name="/基础/09 异步、取消与同步/">
+    <Project Path="Q81/Q81.csproj" />
+    <Project Path="Q82/Q82.csproj" />
+    <Project Path="Q83/Q83.csproj" />
+    <Project Path="Q84/Q84.csproj" />
+    <Project Path="Q85/Q85.csproj" />
+    <Project Path="Q86/Q86.csproj" />
+    <Project Path="Q87/Q87.csproj" />
+    <Project Path="Q88/Q88.csproj" />
+    <Project Path="Q89/Q89.csproj" />
+    <Project Path="Q90/Q90.csproj" />
+  </Folder>
+  <Folder Name="/基础/10 元数据、互操作与新语法/">
+    <Project Path="Q91/Q91.csproj" />
+    <Project Path="Q92/Q92.csproj" />
+    <Project Path="Q93/Q93.csproj" />
+    <Project Path="Q94/Q94.csproj" />
+    <Project Path="Q95/Q95.csproj" />
+    <Project Path="Q96/Q96.csproj" />
+    <Project Path="Q97/Q97.csproj" />
+    <Project Path="Q98/Q98.csproj" />
+    <Project Path="Q99/Q99.csproj" />
+    <Project Path="Q100/Q100.csproj" />
+  </Folder>
+  <Folder Name="/基础/11 值语义与 API 边界/">
+    <Project Path="Q101/Q101.csproj" />
+    <Project Path="Q102/Q102.csproj" />
+    <Project Path="Q103/Q103.csproj" />
+    <Project Path="Q104/Q104.csproj" />
+    <Project Path="Q105/Q105.csproj" />
+    <Project Path="Q106/Q106.csproj" />
+    <Project Path="Q107/Q107.csproj" />
+    <Project Path="Q108/Q108.csproj" />
+    <Project Path="Q109/Q109.csproj" />
+    <Project Path="Q110/Q110.csproj" />
+  </Folder>
+  <Folder Name="/基础/12 初始化、工程与部署/">
+    <Project Path="Q111/Q111.csproj" />
+    <Project Path="Q112/Q112.csproj" />
+    <Project Path="Q113/Q113.csproj" />
+    <Project Path="Q114/Q114.csproj" />
+    <Project Path="Q115/Q115.csproj" />
+    <Project Path="Q116/Q116.csproj" />
+    <Project Path="Q117/Q117.csproj" />
+    <Project Path="Q118/Q118.csproj" />
+    <Project Path="Q119/Q119.csproj" />
+    <Project Path="Q120/Q120.csproj" />
+  </Folder>
+  <Folder Name="/扩展/01 类型与建模/">
+    <Project Path="Q121/Q121.csproj" />
+    <Project Path="Q122/Q122.csproj" />
+    <Project Path="Q123/Q123.csproj" />
+    <Project Path="Q124/Q124.csproj" />
+    <Project Path="Q125/Q125.csproj" />
+    <Project Path="Q126/Q126.csproj" />
+    <Project Path="Q127/Q127.csproj" />
+    <Project Path="Q128/Q128.csproj" />
+    <Project Path="Q129/Q129.csproj" />
+    <Project Path="Q130/Q130.csproj" />
+  </Folder>
+  <Folder Name="/扩展/02 运行时与性能/">
+    <Project Path="Q131/Q131.csproj" />
+    <Project Path="Q132/Q132.csproj" />
+    <Project Path="Q133/Q133.csproj" />
+    <Project Path="Q134/Q134.csproj" />
+    <Project Path="Q135/Q135.csproj" />
+    <Project Path="Q136/Q136.csproj" />
+    <Project Path="Q137/Q137.csproj" />
+    <Project Path="Q138/Q138.csproj" />
+    <Project Path="Q139/Q139.csproj" />
+    <Project Path="Q140/Q140.csproj" />
+    <Project Path="Q141/Q141.csproj" />
+    <Project Path="Q142/Q142.csproj" />
+    <Project Path="Q143/Q143.csproj" />
+    <Project Path="Q144/Q144.csproj" />
+  </Folder>
+  <Folder Name="/扩展/03 对象模型与 API/">
+    <Project Path="Q145/Q145.csproj" />
+    <Project Path="Q146/Q146.csproj" />
+    <Project Path="Q147/Q147.csproj" />
+    <Project Path="Q148/Q148.csproj" />
+    <Project Path="Q149/Q149.csproj" />
+    <Project Path="Q150/Q150.csproj" />
+    <Project Path="Q151/Q151.csproj" />
+    <Project Path="Q152/Q152.csproj" />
+  </Folder>
+  <Folder Name="/扩展/04 资源与执行/">
+    <Project Path="Q153/Q153.csproj" />
+    <Project Path="Q154/Q154.csproj" />
+    <Project Path="Q155/Q155.csproj" />
+    <Project Path="Q156/Q156.csproj" />
+    <Project Path="Q157/Q157.csproj" />
+    <Project Path="Q158/Q158.csproj" />
+    <Project Path="Q159/Q159.csproj" />
+    <Project Path="Q160/Q160.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,1286 @@
+{
+  "schema": 2,
+  "target_framework": "net11.0",
+  "questions": [
+    {
+      "id": "Q01",
+      "number": 1,
+      "title": "文件应用与项目应用",
+      "chapter": "基础/01 程序结构、类型与数值",
+      "project": "Q01/Q01.csproj",
+      "original_id": "Q121"
+    },
+    {
+      "id": "Q02",
+      "number": 2,
+      "title": "导入静态成员与引用程序集",
+      "chapter": "基础/01 程序结构、类型与数值",
+      "project": "Q02/Q02.csproj",
+      "original_id": "Q122"
+    },
+    {
+      "id": "Q03",
+      "number": 3,
+      "title": "var 的类型推断与后续赋值",
+      "chapter": "基础/01 程序结构、类型与数值",
+      "project": "Q03/Q03.csproj",
+      "original_id": "Q123"
+    },
+    {
+      "id": "Q04",
+      "number": 4,
+      "title": "负数的商与余数",
+      "chapter": "基础/01 程序结构、类型与数值",
+      "project": "Q04/Q04.csproj",
+      "original_id": "Q124"
+    },
+    {
+      "id": "Q05",
+      "number": 5,
+      "title": "缩窄转换是否检测溢出",
+      "chapter": "基础/01 程序结构、类型与数值",
+      "project": "Q05/Q05.csproj",
+      "original_id": "Q125"
+    },
+    {
+      "id": "Q06",
+      "number": 6,
+      "title": "十进制字面量的计算",
+      "chapter": "基础/01 程序结构、类型与数值",
+      "project": "Q06/Q06.csproj",
+      "original_id": "Q126"
+    },
+    {
+      "id": "Q07",
+      "number": 7,
+      "title": "NaN 的两种相等检查",
+      "chapter": "基础/01 程序结构、类型与数值",
+      "project": "Q07/Q07.csproj",
+      "original_id": "Q127"
+    },
+    {
+      "id": "Q08",
+      "number": 8,
+      "title": "可空整数的运算",
+      "chapter": "基础/01 程序结构、类型与数值",
+      "project": "Q08/Q08.csproj",
+      "original_id": "Q128"
+    },
+    {
+      "id": "Q09",
+      "number": 9,
+      "title": "可空文本链上的空内容",
+      "chapter": "基础/01 程序结构、类型与数值",
+      "project": "Q09/Q09.csproj",
+      "original_id": "Q129"
+    },
+    {
+      "id": "Q10",
+      "number": 10,
+      "title": "局部变量的赋值要求",
+      "chapter": "基础/01 程序结构、类型与数值",
+      "project": "Q10/Q10.csproj",
+      "original_id": "Q130"
+    },
+    {
+      "id": "Q11",
+      "number": 11,
+      "title": "字符串 Replace 的结果",
+      "chapter": "基础/02 文本、数组与集合",
+      "project": "Q11/Q11.csproj",
+      "original_id": "Q131"
+    },
+    {
+      "id": "Q12",
+      "number": 12,
+      "title": "插值中的宽度与数字格式",
+      "chapter": "基础/02 文本、数组与集合",
+      "project": "Q12/Q12.csproj",
+      "original_id": "Q132"
+    },
+    {
+      "id": "Q13",
+      "number": 13,
+      "title": "字符单元与 Unicode 标量",
+      "chapter": "基础/02 文本、数组与集合",
+      "project": "Q13/Q13.csproj",
+      "original_id": "Q133"
+    },
+    {
+      "id": "Q14",
+      "number": 14,
+      "title": "逐字字符串与转义",
+      "chapter": "基础/02 文本、数组与集合",
+      "project": "Q14/Q14.csproj",
+      "original_id": "Q134"
+    },
+    {
+      "id": "Q15",
+      "number": 15,
+      "title": "新数组里的初始元素",
+      "chapter": "基础/02 文本、数组与集合",
+      "project": "Q15/Q15.csproj",
+      "original_id": "Q135"
+    },
+    {
+      "id": "Q16",
+      "number": 16,
+      "title": "集合表达式的展开与后续修改",
+      "chapter": "基础/02 文本、数组与集合",
+      "project": "Q16/Q16.csproj",
+      "original_id": "Q136"
+    },
+    {
+      "id": "Q17",
+      "number": 17,
+      "title": "Remove 删除哪一个重复项",
+      "chapter": "基础/02 文本、数组与集合",
+      "project": "Q17/Q17.csproj",
+      "original_id": "Q137"
+    },
+    {
+      "id": "Q18",
+      "number": 18,
+      "title": "字典中的零与缺失键",
+      "chapter": "基础/02 文本、数组与集合",
+      "project": "Q18/Q18.csproj",
+      "original_id": "Q138"
+    },
+    {
+      "id": "Q19",
+      "number": 19,
+      "title": "Stack 的 Peek 与 Pop",
+      "chapter": "基础/02 文本、数组与集合",
+      "project": "Q19/Q19.csproj",
+      "original_id": "Q139"
+    },
+    {
+      "id": "Q20",
+      "number": 20,
+      "title": "集合重复插入的返回值",
+      "chapter": "基础/02 文本、数组与集合",
+      "project": "Q20/Q20.csproj",
+      "original_id": "Q140"
+    },
+    {
+      "id": "Q21",
+      "number": 21,
+      "title": "??= 何时计算后备值",
+      "chapter": "基础/03 表达式、模式与控制流",
+      "project": "Q21/Q21.csproj",
+      "original_id": "Q141"
+    },
+    {
+      "id": "Q22",
+      "number": 22,
+      "title": "条件表达式的分支求值",
+      "chapter": "基础/03 表达式、模式与控制流",
+      "project": "Q22/Q22.csproj",
+      "original_id": "Q142"
+    },
+    {
+      "id": "Q23",
+      "number": 23,
+      "title": "null 条件索引会不会计算索引",
+      "chapter": "基础/03 表达式、模式与控制流",
+      "project": "Q23/Q23.csproj",
+      "original_id": "Q143"
+    },
+    {
+      "id": "Q24",
+      "number": 24,
+      "title": "布尔异或的结果",
+      "chapter": "基础/03 表达式、模式与控制流",
+      "project": "Q24/Q24.csproj",
+      "original_id": "Q144"
+    },
+    {
+      "id": "Q25",
+      "number": 25,
+      "title": "when 条件与匹配顺序",
+      "chapter": "基础/03 表达式、模式与控制流",
+      "project": "Q25/Q25.csproj",
+      "original_id": "Q145"
+    },
+    {
+      "id": "Q26",
+      "number": 26,
+      "title": "列表模式与元素数量",
+      "chapter": "基础/03 表达式、模式与控制流",
+      "project": "Q26/Q26.csproj",
+      "original_id": "Q146"
+    },
+    {
+      "id": "Q27",
+      "number": 27,
+      "title": "属性模式能否接受 null",
+      "chapter": "基础/03 表达式、模式与控制流",
+      "project": "Q27/Q27.csproj",
+      "original_id": "Q147"
+    },
+    {
+      "id": "Q28",
+      "number": 28,
+      "title": "跳过一项与终止循环",
+      "chapter": "基础/03 表达式、模式与控制流",
+      "project": "Q28/Q28.csproj",
+      "original_id": "Q148"
+    },
+    {
+      "id": "Q29",
+      "number": 29,
+      "title": "do 与 while 的执行次数",
+      "chapter": "基础/03 表达式、模式与控制流",
+      "project": "Q29/Q29.csproj",
+      "original_id": "Q149"
+    },
+    {
+      "id": "Q30",
+      "number": 30,
+      "title": "switch 分支的结束方式",
+      "chapter": "基础/03 表达式、模式与控制流",
+      "project": "Q30/Q30.csproj",
+      "original_id": "Q150"
+    },
+    {
+      "id": "Q31",
+      "number": 31,
+      "title": "params 的空调用与数组调用",
+      "chapter": "基础/04 方法、参数与迭代器",
+      "project": "Q31/Q31.csproj",
+      "original_id": "Q151"
+    },
+    {
+      "id": "Q32",
+      "number": 32,
+      "title": "ref 参数与调用方变量",
+      "chapter": "基础/04 方法、参数与迭代器",
+      "project": "Q32/Q32.csproj",
+      "original_id": "Q152"
+    },
+    {
+      "id": "Q33",
+      "number": 33,
+      "title": "TryParse 失败时的输出",
+      "chapter": "基础/04 方法、参数与迭代器",
+      "project": "Q33/Q33.csproj",
+      "original_id": "Q153"
+    },
+    {
+      "id": "Q34",
+      "number": 34,
+      "title": "局部函数的声明与调用",
+      "chapter": "基础/04 方法、参数与迭代器",
+      "project": "Q34/Q34.csproj",
+      "original_id": "Q154"
+    },
+    {
+      "id": "Q35",
+      "number": 35,
+      "title": "解构赋值与弃元",
+      "chapter": "基础/04 方法、参数与迭代器",
+      "project": "Q35/Q35.csproj",
+      "original_id": "Q155"
+    },
+    {
+      "id": "Q36",
+      "number": 36,
+      "title": "字面量选择哪一个重载",
+      "chapter": "基础/04 方法、参数与迭代器",
+      "project": "Q36/Q36.csproj",
+      "original_id": "Q156"
+    },
+    {
+      "id": "Q37",
+      "number": 37,
+      "title": "yield break 与枚举结束",
+      "chapter": "基础/04 方法、参数与迭代器",
+      "project": "Q37/Q37.csproj",
+      "original_id": "Q157"
+    },
+    {
+      "id": "Q38",
+      "number": 38,
+      "title": "同一序列的两次枚举",
+      "chapter": "基础/04 方法、参数与迭代器",
+      "project": "Q38/Q38.csproj",
+      "original_id": "Q158"
+    },
+    {
+      "id": "Q39",
+      "number": 39,
+      "title": "foreach 退出与迭代器清理",
+      "chapter": "基础/04 方法、参数与迭代器",
+      "project": "Q39/Q39.csproj",
+      "original_id": "Q159"
+    },
+    {
+      "id": "Q40",
+      "number": 40,
+      "title": "yield 与异常处理块",
+      "chapter": "基础/04 方法、参数与迭代器",
+      "project": "Q40/Q40.csproj",
+      "original_id": "Q160"
+    },
+    {
+      "id": "Q41",
+      "number": 41,
+      "title": "把参数交给基类构造函数",
+      "chapter": "基础/05 对象模型与成员",
+      "project": "Q41/Q41.csproj",
+      "original_id": "Q161"
+    },
+    {
+      "id": "Q42",
+      "number": 42,
+      "title": "私有 setter 与类内状态更新",
+      "chapter": "基础/05 对象模型与成员",
+      "project": "Q42/Q42.csproj",
+      "original_id": "Q162"
+    },
+    {
+      "id": "Q43",
+      "number": 43,
+      "title": "对象初始化器与构造函数",
+      "chapter": "基础/05 对象模型与成员",
+      "project": "Q43/Q43.csproj",
+      "original_id": "Q163"
+    },
+    {
+      "id": "Q44",
+      "number": 44,
+      "title": "静态字段与实例状态",
+      "chapter": "基础/05 对象模型与成员",
+      "project": "Q44/Q44.csproj",
+      "original_id": "Q164"
+    },
+    {
+      "id": "Q45",
+      "number": 45,
+      "title": "记录相等与普通类相等",
+      "chapter": "基础/05 对象模型与成员",
+      "project": "Q45/Q45.csproj",
+      "original_id": "Q165"
+    },
+    {
+      "id": "Q46",
+      "number": 46,
+      "title": "record struct 的 with 更新",
+      "chapter": "基础/05 对象模型与成员",
+      "project": "Q46/Q46.csproj",
+      "original_id": "Q166"
+    },
+    {
+      "id": "Q47",
+      "number": 47,
+      "title": "sealed override 与继续重写",
+      "chapter": "基础/05 对象模型与成员",
+      "project": "Q47/Q47.csproj",
+      "original_id": "Q167"
+    },
+    {
+      "id": "Q48",
+      "number": 48,
+      "title": "override 内的 base 调用",
+      "chapter": "基础/05 对象模型与成员",
+      "project": "Q48/Q48.csproj",
+      "original_id": "Q168"
+    },
+    {
+      "id": "Q49",
+      "number": 49,
+      "title": "扩展方法语法与静态调用",
+      "chapter": "基础/05 对象模型与成员",
+      "project": "Q49/Q49.csproj",
+      "original_id": "Q169"
+    },
+    {
+      "id": "Q50",
+      "number": 50,
+      "title": "接口属性与实现类",
+      "chapter": "基础/05 对象模型与成员",
+      "project": "Q50/Q50.csproj",
+      "original_id": "Q170"
+    },
+    {
+      "id": "Q51",
+      "number": 51,
+      "title": "new() 约束与构造函数",
+      "chapter": "基础/06 泛型、委托与事件",
+      "project": "Q51/Q51.csproj",
+      "original_id": "Q171"
+    },
+    {
+      "id": "Q52",
+      "number": 52,
+      "title": "泛型约束与比较操作",
+      "chapter": "基础/06 泛型、委托与事件",
+      "project": "Q52/Q52.csproj",
+      "original_id": "Q172"
+    },
+    {
+      "id": "Q53",
+      "number": 53,
+      "title": "序列接口的协变",
+      "chapter": "基础/06 泛型、委托与事件",
+      "project": "Q53/Q53.csproj",
+      "original_id": "Q173"
+    },
+    {
+      "id": "Q54",
+      "number": 54,
+      "title": "回调参数的逆变",
+      "chapter": "基础/06 泛型、委托与事件",
+      "project": "Q54/Q54.csproj",
+      "original_id": "Q174"
+    },
+    {
+      "id": "Q55",
+      "number": 55,
+      "title": "排序比较器与顺序",
+      "chapter": "基础/06 泛型、委托与事件",
+      "project": "Q55/Q55.csproj",
+      "original_id": "Q175"
+    },
+    {
+      "id": "Q56",
+      "number": 56,
+      "title": "Func 的组合调用",
+      "chapter": "基础/06 泛型、委托与事件",
+      "project": "Q56/Q56.csproj",
+      "original_id": "Q176"
+    },
+    {
+      "id": "Q57",
+      "number": 57,
+      "title": "static lambda 的参数与使用",
+      "chapter": "基础/06 泛型、委托与事件",
+      "project": "Q57/Q57.csproj",
+      "original_id": "Q177"
+    },
+    {
+      "id": "Q58",
+      "number": 58,
+      "title": "多播调用遇到异常",
+      "chapter": "基础/06 泛型、委托与事件",
+      "project": "Q58/Q58.csproj",
+      "original_id": "Q178"
+    },
+    {
+      "id": "Q59",
+      "number": 59,
+      "title": "事件订阅与委托退订",
+      "chapter": "基础/06 泛型、委托与事件",
+      "project": "Q59/Q59.csproj",
+      "original_id": "Q179"
+    },
+    {
+      "id": "Q60",
+      "number": 60,
+      "title": "泛型方法的类型推断",
+      "chapter": "基础/06 泛型、委托与事件",
+      "project": "Q60/Q60.csproj",
+      "original_id": "Q180"
+    },
+    {
+      "id": "Q61",
+      "number": 61,
+      "title": "catch 与 finally 的执行顺序",
+      "chapter": "基础/07 异常、资源与 I/O",
+      "project": "Q61/Q61.csproj",
+      "original_id": "Q181"
+    },
+    {
+      "id": "Q62",
+      "number": 62,
+      "title": "catch 的顺序与可达性",
+      "chapter": "基础/07 异常、资源与 I/O",
+      "project": "Q62/Q62.csproj",
+      "original_id": "Q182"
+    },
+    {
+      "id": "Q63",
+      "number": 63,
+      "title": "异常包装与 InnerException",
+      "chapter": "基础/07 异常、资源与 I/O",
+      "project": "Q63/Q63.csproj",
+      "original_id": "Q183"
+    },
+    {
+      "id": "Q64",
+      "number": 64,
+      "title": "参数异常的参数名",
+      "chapter": "基础/07 异常、资源与 I/O",
+      "project": "Q64/Q64.csproj",
+      "original_id": "Q184"
+    },
+    {
+      "id": "Q65",
+      "number": 65,
+      "title": "异常过滤器与后续 catch",
+      "chapter": "基础/07 异常、资源与 I/O",
+      "project": "Q65/Q65.csproj",
+      "original_id": "Q185"
+    },
+    {
+      "id": "Q66",
+      "number": 66,
+      "title": "using 声明的释放边界",
+      "chapter": "基础/07 异常、资源与 I/O",
+      "project": "Q66/Q66.csproj",
+      "original_id": "Q186"
+    },
+    {
+      "id": "Q67",
+      "number": 67,
+      "title": "包装读取器是否拥有底层流",
+      "chapter": "基础/07 异常、资源与 I/O",
+      "project": "Q67/Q67.csproj",
+      "original_id": "Q187"
+    },
+    {
+      "id": "Q68",
+      "number": 68,
+      "title": "异步释放的故障传播",
+      "chapter": "基础/07 异常、资源与 I/O",
+      "project": "Q68/Q68.csproj",
+      "original_id": "Q188"
+    },
+    {
+      "id": "Q69",
+      "number": 69,
+      "title": "Stream.Read 的读取数量",
+      "chapter": "基础/07 异常、资源与 I/O",
+      "project": "Q69/Q69.csproj",
+      "original_id": "Q189"
+    },
+    {
+      "id": "Q70",
+      "number": 70,
+      "title": "using 的空资源处理",
+      "chapter": "基础/07 异常、资源与 I/O",
+      "project": "Q70/Q70.csproj",
+      "original_id": "Q190"
+    },
+    {
+      "id": "Q71",
+      "number": 71,
+      "title": "查询表达式中的排序与投影",
+      "chapter": "基础/08 LINQ 查询与数据关系",
+      "project": "Q71/Q71.csproj",
+      "original_id": "Q191"
+    },
+    {
+      "id": "Q72",
+      "number": 72,
+      "title": "查询 let 与中间计算",
+      "chapter": "基础/08 LINQ 查询与数据关系",
+      "project": "Q72/Q72.csproj",
+      "original_id": "Q192"
+    },
+    {
+      "id": "Q73",
+      "number": 73,
+      "title": "展平查询与外侧标签",
+      "chapter": "基础/08 LINQ 查询与数据关系",
+      "project": "Q73/Q73.csproj",
+      "original_id": "Q193"
+    },
+    {
+      "id": "Q74",
+      "number": 74,
+      "title": "分组后的数量求和",
+      "chapter": "基础/08 LINQ 查询与数据关系",
+      "project": "Q74/Q74.csproj",
+      "original_id": "Q194"
+    },
+    {
+      "id": "Q75",
+      "number": 75,
+      "title": "左外连接与未匹配项",
+      "chapter": "基础/08 LINQ 查询与数据关系",
+      "project": "Q75/Q75.csproj",
+      "original_id": "Q195"
+    },
+    {
+      "id": "Q76",
+      "number": 76,
+      "title": "排序键相同时的元素顺序",
+      "chapter": "基础/08 LINQ 查询与数据关系",
+      "project": "Q76/Q76.csproj",
+      "original_id": "Q196"
+    },
+    {
+      "id": "Q77",
+      "number": 77,
+      "title": "分页的跳过与取出数量",
+      "chapter": "基础/08 LINQ 查询与数据关系",
+      "project": "Q77/Q77.csproj",
+      "original_id": "Q197"
+    },
+    {
+      "id": "Q78",
+      "number": 78,
+      "title": "空序列上的 All 与 Any",
+      "chapter": "基础/08 LINQ 查询与数据关系",
+      "project": "Q78/Q78.csproj",
+      "original_id": "Q198"
+    },
+    {
+      "id": "Q79",
+      "number": 79,
+      "title": "ToLookup 与同键多项",
+      "chapter": "基础/08 LINQ 查询与数据关系",
+      "project": "Q79/Q79.csproj",
+      "original_id": "Q199"
+    },
+    {
+      "id": "Q80",
+      "number": 80,
+      "title": "查询创建与源集合修改",
+      "chapter": "基础/08 LINQ 查询与数据关系",
+      "project": "Q80/Q80.csproj",
+      "original_id": "Q200"
+    },
+    {
+      "id": "Q81",
+      "number": 81,
+      "title": "await 已完成的 Task",
+      "chapter": "基础/09 异步、取消与同步",
+      "project": "Q81/Q81.csproj",
+      "original_id": "Q201"
+    },
+    {
+      "id": "Q82",
+      "number": 82,
+      "title": "WhenAny 与获胜任务的异常",
+      "chapter": "基础/09 异步、取消与同步",
+      "project": "Q82/Q82.csproj",
+      "original_id": "Q202"
+    },
+    {
+      "id": "Q83",
+      "number": 83,
+      "title": "WhenAll 的结果顺序",
+      "chapter": "基础/09 异步、取消与同步",
+      "project": "Q83/Q83.csproj",
+      "original_id": "Q203"
+    },
+    {
+      "id": "Q84",
+      "number": 84,
+      "title": "async 方法的异常传播",
+      "chapter": "基础/09 异步、取消与同步",
+      "project": "Q84/Q84.csproj",
+      "original_id": "Q204"
+    },
+    {
+      "id": "Q85",
+      "number": 85,
+      "title": "取消令牌与检查点",
+      "chapter": "基础/09 异步、取消与同步",
+      "project": "Q85/Q85.csproj",
+      "original_id": "Q205"
+    },
+    {
+      "id": "Q86",
+      "number": 86,
+      "title": "异步序列的枚举",
+      "chapter": "基础/09 异步、取消与同步",
+      "project": "Q86/Q86.csproj",
+      "original_id": "Q206"
+    },
+    {
+      "id": "Q87",
+      "number": 87,
+      "title": "await foreach 提前退出的收尾",
+      "chapter": "基础/09 异步、取消与同步",
+      "project": "Q87/Q87.csproj",
+      "original_id": "Q207"
+    },
+    {
+      "id": "Q88",
+      "number": 88,
+      "title": "SemaphoreSlim 的许可与等待",
+      "chapter": "基础/09 异步、取消与同步",
+      "project": "Q88/Q88.csproj",
+      "original_id": "Q208"
+    },
+    {
+      "id": "Q89",
+      "number": 89,
+      "title": "CompareExchange 的返回值",
+      "chapter": "基础/09 异步、取消与同步",
+      "project": "Q89/Q89.csproj",
+      "original_id": "Q209"
+    },
+    {
+      "id": "Q90",
+      "number": 90,
+      "title": "WaitAsync 的取消边界",
+      "chapter": "基础/09 异步、取消与同步",
+      "project": "Q90/Q90.csproj",
+      "original_id": "Q210"
+    },
+    {
+      "id": "Q91",
+      "number": 91,
+      "title": "本机缓冲区的释放契约",
+      "chapter": "基础/10 元数据、互操作与新语法",
+      "project": "Q91/Q91.csproj",
+      "original_id": "Q211"
+    },
+    {
+      "id": "Q92",
+      "number": 92,
+      "title": "封闭泛型类型与泛型定义",
+      "chapter": "基础/10 元数据、互操作与新语法",
+      "project": "Q92/Q92.csproj",
+      "original_id": "Q212"
+    },
+    {
+      "id": "Q93",
+      "number": 93,
+      "title": "通过反射读取特性",
+      "chapter": "基础/10 元数据、互操作与新语法",
+      "project": "Q93/Q93.csproj",
+      "original_id": "Q213"
+    },
+    {
+      "id": "Q94",
+      "number": 94,
+      "title": "表达式树与捕获变量",
+      "chapter": "基础/10 元数据、互操作与新语法",
+      "project": "Q94/Q94.csproj",
+      "original_id": "Q214"
+    },
+    {
+      "id": "Q95",
+      "number": 95,
+      "title": "dynamic 的成员绑定",
+      "chapter": "基础/10 元数据、互操作与新语法",
+      "project": "Q95/Q95.csproj",
+      "original_id": "Q215"
+    },
+    {
+      "id": "Q96",
+      "number": 96,
+      "title": "Span 切片与后备数组",
+      "chapter": "基础/10 元数据、互操作与新语法",
+      "project": "Q96/Q96.csproj",
+      "original_id": "Q216"
+    },
+    {
+      "id": "Q97",
+      "number": 97,
+      "title": "field 支持的属性规范化",
+      "chapter": "基础/10 元数据、互操作与新语法",
+      "project": "Q97/Q97.csproj",
+      "original_id": "Q217"
+    },
+    {
+      "id": "Q98",
+      "number": 98,
+      "title": "扩展属性与对象成员",
+      "chapter": "基础/10 元数据、互操作与新语法",
+      "project": "Q98/Q98.csproj",
+      "original_id": "Q218"
+    },
+    {
+      "id": "Q99",
+      "number": 99,
+      "title": "源生成器与分析器的分工",
+      "chapter": "基础/10 元数据、互操作与新语法",
+      "project": "Q99/Q99.csproj",
+      "original_id": "Q219"
+    },
+    {
+      "id": "Q100",
+      "number": 100,
+      "title": "unsafe、指针与 GC",
+      "chapter": "基础/10 元数据、互操作与新语法",
+      "project": "Q100/Q100.csproj",
+      "original_id": "Q220"
+    },
+    {
+      "id": "Q101",
+      "number": 101,
+      "title": "结构体复制与数值字段",
+      "chapter": "基础/11 值语义与 API 边界",
+      "project": "Q101/Q101.csproj",
+      "original_id": "Q221"
+    },
+    {
+      "id": "Q102",
+      "number": 102,
+      "title": "类变量赋值与对象状态",
+      "chapter": "基础/11 值语义与 API 边界",
+      "project": "Q102/Q102.csproj",
+      "original_id": "Q222"
+    },
+    {
+      "id": "Q103",
+      "number": 103,
+      "title": "default 与显式结构构造器",
+      "chapter": "基础/11 值语义与 API 边界",
+      "project": "Q103/Q103.csproj",
+      "original_id": "Q223"
+    },
+    {
+      "id": "Q104",
+      "number": 104,
+      "title": "null-forgiving 与可空分析",
+      "chapter": "基础/11 值语义与 API 边界",
+      "project": "Q104/Q104.csproj",
+      "original_id": "Q224"
+    },
+    {
+      "id": "Q105",
+      "number": 105,
+      "title": "readonly 字段的初始化",
+      "chapter": "基础/11 值语义与 API 边界",
+      "project": "Q105/Q105.csproj",
+      "original_id": "Q225"
+    },
+    {
+      "id": "Q106",
+      "number": 106,
+      "title": "标志枚举的位组合",
+      "chapter": "基础/11 值语义与 API 边界",
+      "project": "Q106/Q106.csproj",
+      "original_id": "Q226"
+    },
+    {
+      "id": "Q107",
+      "number": 107,
+      "title": "从末尾索引与范围右端",
+      "chapter": "基础/11 值语义与 API 边界",
+      "project": "Q107/Q107.csproj",
+      "original_id": "Q227"
+    },
+    {
+      "id": "Q108",
+      "number": 108,
+      "title": "自定义索引器的访问",
+      "chapter": "基础/11 值语义与 API 边界",
+      "project": "Q108/Q108.csproj",
+      "original_id": "Q228"
+    },
+    {
+      "id": "Q109",
+      "number": 109,
+      "title": "自定义运算符的调用",
+      "chapter": "基础/11 值语义与 API 边界",
+      "project": "Q109/Q109.csproj",
+      "original_id": "Q229"
+    },
+    {
+      "id": "Q110",
+      "number": 110,
+      "title": "XML 文档注释与参数校验",
+      "chapter": "基础/11 值语义与 API 边界",
+      "project": "Q110/Q110.csproj",
+      "original_id": "Q230"
+    },
+    {
+      "id": "Q111",
+      "number": 111,
+      "title": "required 成员的初始化",
+      "chapter": "基础/12 初始化、工程与部署",
+      "project": "Q111/Q111.csproj",
+      "original_id": "Q231"
+    },
+    {
+      "id": "Q112",
+      "number": 112,
+      "title": "普通类的主构造参数",
+      "chapter": "基础/12 初始化、工程与部署",
+      "project": "Q112/Q112.csproj",
+      "original_id": "Q232"
+    },
+    {
+      "id": "Q113",
+      "number": 113,
+      "title": "抽象类的公共流程",
+      "chapter": "基础/12 初始化、工程与部署",
+      "project": "Q113/Q113.csproj",
+      "original_id": "Q233"
+    },
+    {
+      "id": "Q114",
+      "number": 114,
+      "title": "泛型数学的运算约束",
+      "chapter": "基础/12 初始化、工程与部署",
+      "project": "Q114/Q114.csproj",
+      "original_id": "Q234"
+    },
+    {
+      "id": "Q115",
+      "number": 115,
+      "title": "同一线程的嵌套 lock",
+      "chapter": "基础/12 初始化、工程与部署",
+      "project": "Q115/Q115.csproj",
+      "original_id": "Q235"
+    },
+    {
+      "id": "Q116",
+      "number": 116,
+      "title": "CPU 工作与异步 I/O 的选择",
+      "chapter": "基础/12 初始化、工程与部署",
+      "project": "Q116/Q116.csproj",
+      "original_id": "Q236"
+    },
+    {
+      "id": "Q117",
+      "number": 117,
+      "title": "Release 下的条件编译",
+      "chapter": "基础/12 初始化、工程与部署",
+      "project": "Q117/Q117.csproj",
+      "original_id": "Q237"
+    },
+    {
+      "id": "Q118",
+      "number": 118,
+      "title": "SDK 与目标框架各自决定什么",
+      "chapter": "基础/12 初始化、工程与部署",
+      "project": "Q118/Q118.csproj",
+      "original_id": "Q238"
+    },
+    {
+      "id": "Q119",
+      "number": 119,
+      "title": "GC 与 IDisposable 的职责",
+      "chapter": "基础/12 初始化、工程与部署",
+      "project": "Q119/Q119.csproj",
+      "original_id": "Q239"
+    },
+    {
+      "id": "Q120",
+      "number": 120,
+      "title": "Native AOT 的动态能力边界",
+      "chapter": "基础/12 初始化、工程与部署",
+      "project": "Q120/Q120.csproj",
+      "original_id": "Q240"
+    },
+    {
+      "id": "Q121",
+      "number": 121,
+      "title": "修改对象和替换调用方变量",
+      "chapter": "扩展/01 类型与建模",
+      "project": "Q121/Q121.csproj",
+      "original_id": "Q01"
+    },
+    {
+      "id": "Q122",
+      "number": 122,
+      "title": "值类型中的引用字段",
+      "chapter": "扩展/01 类型与建模",
+      "project": "Q122/Q122.csproj",
+      "original_id": "Q02"
+    },
+    {
+      "id": "Q123",
+      "number": 123,
+      "title": "List 中的 struct 如何写回",
+      "chapter": "扩展/01 类型与建模",
+      "project": "Q123/Q123.csproj",
+      "original_id": "Q03"
+    },
+    {
+      "id": "Q124",
+      "number": 124,
+      "title": "record 的相等性与复制深度",
+      "chapter": "扩展/01 类型与建模",
+      "project": "Q124/Q124.csproj",
+      "original_id": "Q06"
+    },
+    {
+      "id": "Q125",
+      "number": 125,
+      "title": "可变哈希键会破坏什么",
+      "chapter": "扩展/01 类型与建模",
+      "project": "Q125/Q125.csproj",
+      "original_id": "Q08"
+    },
+    {
+      "id": "Q126",
+      "number": 126,
+      "title": "泛型方法中的成员访问",
+      "chapter": "扩展/01 类型与建模",
+      "project": "Q126/Q126.csproj",
+      "original_id": "Q09"
+    },
+    {
+      "id": "Q127",
+      "number": 127,
+      "title": "回调参数中变型的安全方向",
+      "chapter": "扩展/01 类型与建模",
+      "project": "Q127/Q127.csproj",
+      "original_id": "Q11"
+    },
+    {
+      "id": "Q128",
+      "number": 128,
+      "title": "var、object 与 dynamic 的绑定时机",
+      "chapter": "扩展/01 类型与建模",
+      "project": "Q128/Q128.csproj",
+      "original_id": "Q12"
+    },
+    {
+      "id": "Q129",
+      "number": 129,
+      "title": "override 与 new 的调用分派",
+      "chapter": "扩展/01 类型与建模",
+      "project": "Q129/Q129.csproj",
+      "original_id": "Q13"
+    },
+    {
+      "id": "Q130",
+      "number": 130,
+      "title": "显式接口实现可以改变调用入口",
+      "chapter": "扩展/01 类型与建模",
+      "project": "Q130/Q130.csproj",
+      "original_id": "Q14"
+    },
+    {
+      "id": "Q131",
+      "number": 131,
+      "title": "把 class 改成 struct 就能摆脱 GC 吗",
+      "chapter": "扩展/02 运行时与性能",
+      "project": "Q131/Q131.csproj",
+      "original_id": "Q41"
+    },
+    {
+      "id": "Q132",
+      "number": 132,
+      "title": "object 中保存的是可变值的哪一份",
+      "chapter": "扩展/02 运行时与性能",
+      "project": "Q132/Q132.csproj",
+      "original_id": "Q42"
+    },
+    {
+      "id": "Q133",
+      "number": 133,
+      "title": "接口参数与受约束的泛型调用",
+      "chapter": "扩展/02 运行时与性能",
+      "project": "Q133/Q133.csproj",
+      "original_id": "Q43"
+    },
+    {
+      "id": "Q134",
+      "number": 134,
+      "title": "Span 与 ReadOnlySpan 的数据关系",
+      "chapter": "扩展/02 运行时与性能",
+      "project": "Q134/Q134.csproj",
+      "original_id": "Q44"
+    },
+    {
+      "id": "Q135",
+      "number": 135,
+      "title": "Span 与异步挂起",
+      "chapter": "扩展/02 运行时与性能",
+      "project": "Q135/Q135.csproj",
+      "original_id": "Q45"
+    },
+    {
+      "id": "Q136",
+      "number": 136,
+      "title": "池化缓冲区何时能归还",
+      "chapter": "扩展/02 运行时与性能",
+      "project": "Q136/Q136.csproj",
+      "original_id": "Q46"
+    },
+    {
+      "id": "Q137",
+      "number": 137,
+      "title": "GC 没有释放业务已结束的对象",
+      "chapter": "扩展/02 运行时与性能",
+      "project": "Q137/Q137.csproj",
+      "original_id": "Q47"
+    },
+    {
+      "id": "Q138",
+      "number": 138,
+      "title": "对象存活与地址固定",
+      "chapter": "扩展/02 运行时与性能",
+      "project": "Q138/Q138.csproj",
+      "original_id": "Q49"
+    },
+    {
+      "id": "Q139",
+      "number": 139,
+      "title": "累计分配计数不能回答什么",
+      "chapter": "扩展/02 运行时与性能",
+      "project": "Q139/Q139.csproj",
+      "original_id": "Q51"
+    },
+    {
+      "id": "Q140",
+      "number": 140,
+      "title": "泛型代码共享会合并静态状态吗",
+      "chapter": "扩展/02 运行时与性能",
+      "project": "Q140/Q140.csproj",
+      "original_id": "Q52"
+    },
+    {
+      "id": "Q141",
+      "number": 141,
+      "title": "volatile 与并发递增",
+      "chapter": "扩展/02 运行时与性能",
+      "project": "Q141/Q141.csproj",
+      "original_id": "Q56"
+    },
+    {
+      "id": "Q142",
+      "number": 142,
+      "title": "锁与多字段一致性",
+      "chapter": "扩展/02 运行时与性能",
+      "project": "Q142/Q142.csproj",
+      "original_id": "Q57"
+    },
+    {
+      "id": "Q143",
+      "number": 143,
+      "title": "并发字典保证工厂只执行一次吗",
+      "chapter": "扩展/02 运行时与性能",
+      "project": "Q143/Q143.csproj",
+      "original_id": "Q58"
+    },
+    {
+      "id": "Q144",
+      "number": 144,
+      "title": "in 参数与结构体成员调用",
+      "chapter": "扩展/02 运行时与性能",
+      "project": "Q144/Q144.csproj",
+      "original_id": "Q60"
+    },
+    {
+      "id": "Q145",
+      "number": 145,
+      "title": "构造函数体的先后",
+      "chapter": "扩展/03 对象模型与 API",
+      "project": "Q145/Q145.csproj",
+      "original_id": "Q81"
+    },
+    {
+      "id": "Q146",
+      "number": 146,
+      "title": "属性访问器的执行",
+      "chapter": "扩展/03 对象模型与 API",
+      "project": "Q146/Q146.csproj",
+      "original_id": "Q84"
+    },
+    {
+      "id": "Q147",
+      "number": 147,
+      "title": "public const 的发布边界",
+      "chapter": "扩展/03 对象模型与 API",
+      "project": "Q147/Q147.csproj",
+      "original_id": "Q87"
+    },
+    {
+      "id": "Q148",
+      "number": 148,
+      "title": "可选参数与虚调用分两步",
+      "chapter": "扩展/03 对象模型与 API",
+      "project": "Q148/Q148.csproj",
+      "original_id": "Q88"
+    },
+    {
+      "id": "Q149",
+      "number": 149,
+      "title": "命名实参的求值顺序",
+      "chapter": "扩展/03 对象模型与 API",
+      "project": "Q149/Q149.csproj",
+      "original_id": "Q89"
+    },
+    {
+      "id": "Q150",
+      "number": 150,
+      "title": "默认接口实现的调用视图",
+      "chapter": "扩展/03 对象模型与 API",
+      "project": "Q150/Q150.csproj",
+      "original_id": "Q90"
+    },
+    {
+      "id": "Q151",
+      "number": 151,
+      "title": "实例方法与扩展方法的绑定",
+      "chapter": "扩展/03 对象模型与 API",
+      "project": "Q151/Q151.csproj",
+      "original_id": "Q94"
+    },
+    {
+      "id": "Q152",
+      "number": 152,
+      "title": "多播委托的返回值",
+      "chapter": "扩展/03 对象模型与 API",
+      "project": "Q152/Q152.csproj",
+      "original_id": "Q98"
+    },
+    {
+      "id": "Q153",
+      "number": 153,
+      "title": "await using 的完成边界与所有权",
+      "chapter": "扩展/04 资源与执行",
+      "project": "Q153/Q153.csproj",
+      "original_id": "Q22"
+    },
+    {
+      "id": "Q154",
+      "number": 154,
+      "title": "事件重复订阅后的退订责任",
+      "chapter": "扩展/04 资源与执行",
+      "project": "Q154/Q154.csproj",
+      "original_id": "Q27"
+    },
+    {
+      "id": "Q155",
+      "number": 155,
+      "title": "IQueryable 的表达式在哪里执行",
+      "chapter": "扩展/04 资源与执行",
+      "project": "Q155/Q155.csproj",
+      "original_id": "Q30"
+    },
+    {
+      "id": "Q156",
+      "number": 156,
+      "title": "WhenAll 的故障完成与异常观察",
+      "chapter": "扩展/04 资源与执行",
+      "project": "Q156/Q156.csproj",
+      "original_id": "Q34"
+    },
+    {
+      "id": "Q157",
+      "number": 157,
+      "title": "取消请求与清理完成",
+      "chapter": "扩展/04 资源与执行",
+      "project": "Q157/Q157.csproj",
+      "original_id": "Q35"
+    },
+    {
+      "id": "Q158",
+      "number": 158,
+      "title": "任务查询的重复枚举",
+      "chapter": "扩展/04 资源与执行",
+      "project": "Q158/Q158.csproj",
+      "original_id": "Q36"
+    },
+    {
+      "id": "Q159",
+      "number": 159,
+      "title": "async void 应放在哪个边界",
+      "chapter": "扩展/04 资源与执行",
+      "project": "Q159/Q159.csproj",
+      "original_id": "Q37"
+    },
+    {
+      "id": "Q160",
+      "number": 160,
+      "title": "ConfigureAwait(false) 的精确边界",
+      "chapter": "扩展/04 资源与执行",
+      "project": "Q160/Q160.csproj",
+      "original_id": "Q38"
+    }
+  ]
+}

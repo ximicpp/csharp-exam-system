@@ -1,0 +1,746 @@
+{
+  "version": "2.0.0",
+  "options": {
+    "cwd": "${workspaceFolder}",
+    "env": {
+      "DOTNET_ROOT": "${workspaceFolder}/.tools/dotnet11",
+      "DOTNET_CLI_TELEMETRY_OPTOUT": "1",
+      "DOTNET_NOLOGO": "1"
+    }
+  },
+  "tasks": [
+    {
+      "label": "Exam: build current question",
+      "type": "process",
+      "command": "${workspaceFolder}/.tools/dotnet11/dotnet",
+      "windows": {
+        "command": "${workspaceFolder}/.tools/dotnet11/dotnet.exe"
+      },
+      "args": [
+        "build",
+        "${fileDirname}/${fileDirnameBasename}.csproj",
+        "-c",
+        "Debug",
+        "--nologo",
+        "-m:4"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "Exam: run question",
+      "type": "process",
+      "command": "${workspaceFolder}/.tools/dotnet11/dotnet",
+      "windows": {
+        "command": "${workspaceFolder}/.tools/dotnet11/dotnet.exe"
+      },
+      "args": [
+        "run",
+        "--project",
+        "${input:examQuestion}/${input:examQuestion}.csproj",
+        "-c",
+        "${input:examConfiguration}"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "Exam: build",
+      "type": "process",
+      "command": "${workspaceFolder}/.tools/dotnet11/dotnet",
+      "windows": {
+        "command": "${workspaceFolder}/.tools/dotnet11/dotnet.exe"
+      },
+      "args": [
+        "build",
+        "CSharpExam.slnx",
+        "-c",
+        "Debug",
+        "--nologo",
+        "-m:4"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "Exam: build current question (Release)",
+      "type": "process",
+      "command": "${workspaceFolder}/.tools/dotnet11/dotnet",
+      "windows": {
+        "command": "${workspaceFolder}/.tools/dotnet11/dotnet.exe"
+      },
+      "args": [
+        "build",
+        "${fileDirname}/${fileDirnameBasename}.csproj",
+        "-c",
+        "Release",
+        "--nologo",
+        "-m:4"
+      ],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    }
+  ],
+  "inputs": [
+    {
+      "id": "examQuestion",
+      "type": "pickString",
+      "description": "按考试显示号选择题目",
+      "options": [
+        {
+          "label": "Q01 · 文件应用与项目应用（原题号 Q121）",
+          "value": "Q01"
+        },
+        {
+          "label": "Q02 · 导入静态成员与引用程序集（原题号 Q122）",
+          "value": "Q02"
+        },
+        {
+          "label": "Q03 · var 的类型推断与后续赋值（原题号 Q123）",
+          "value": "Q03"
+        },
+        {
+          "label": "Q04 · 负数的商与余数（原题号 Q124）",
+          "value": "Q04"
+        },
+        {
+          "label": "Q05 · 缩窄转换是否检测溢出（原题号 Q125）",
+          "value": "Q05"
+        },
+        {
+          "label": "Q06 · 十进制字面量的计算（原题号 Q126）",
+          "value": "Q06"
+        },
+        {
+          "label": "Q07 · NaN 的两种相等检查（原题号 Q127）",
+          "value": "Q07"
+        },
+        {
+          "label": "Q08 · 可空整数的运算（原题号 Q128）",
+          "value": "Q08"
+        },
+        {
+          "label": "Q09 · 可空文本链上的空内容（原题号 Q129）",
+          "value": "Q09"
+        },
+        {
+          "label": "Q10 · 局部变量的赋值要求（原题号 Q130）",
+          "value": "Q10"
+        },
+        {
+          "label": "Q11 · 字符串 Replace 的结果（原题号 Q131）",
+          "value": "Q11"
+        },
+        {
+          "label": "Q12 · 插值中的宽度与数字格式（原题号 Q132）",
+          "value": "Q12"
+        },
+        {
+          "label": "Q13 · 字符单元与 Unicode 标量（原题号 Q133）",
+          "value": "Q13"
+        },
+        {
+          "label": "Q14 · 逐字字符串与转义（原题号 Q134）",
+          "value": "Q14"
+        },
+        {
+          "label": "Q15 · 新数组里的初始元素（原题号 Q135）",
+          "value": "Q15"
+        },
+        {
+          "label": "Q16 · 集合表达式的展开与后续修改（原题号 Q136）",
+          "value": "Q16"
+        },
+        {
+          "label": "Q17 · Remove 删除哪一个重复项（原题号 Q137）",
+          "value": "Q17"
+        },
+        {
+          "label": "Q18 · 字典中的零与缺失键（原题号 Q138）",
+          "value": "Q18"
+        },
+        {
+          "label": "Q19 · Stack 的 Peek 与 Pop（原题号 Q139）",
+          "value": "Q19"
+        },
+        {
+          "label": "Q20 · 集合重复插入的返回值（原题号 Q140）",
+          "value": "Q20"
+        },
+        {
+          "label": "Q21 · ??= 何时计算后备值（原题号 Q141）",
+          "value": "Q21"
+        },
+        {
+          "label": "Q22 · 条件表达式的分支求值（原题号 Q142）",
+          "value": "Q22"
+        },
+        {
+          "label": "Q23 · null 条件索引会不会计算索引（原题号 Q143）",
+          "value": "Q23"
+        },
+        {
+          "label": "Q24 · 布尔异或的结果（原题号 Q144）",
+          "value": "Q24"
+        },
+        {
+          "label": "Q25 · when 条件与匹配顺序（原题号 Q145）",
+          "value": "Q25"
+        },
+        {
+          "label": "Q26 · 列表模式与元素数量（原题号 Q146）",
+          "value": "Q26"
+        },
+        {
+          "label": "Q27 · 属性模式能否接受 null（原题号 Q147）",
+          "value": "Q27"
+        },
+        {
+          "label": "Q28 · 跳过一项与终止循环（原题号 Q148）",
+          "value": "Q28"
+        },
+        {
+          "label": "Q29 · do 与 while 的执行次数（原题号 Q149）",
+          "value": "Q29"
+        },
+        {
+          "label": "Q30 · switch 分支的结束方式（原题号 Q150）",
+          "value": "Q30"
+        },
+        {
+          "label": "Q31 · params 的空调用与数组调用（原题号 Q151）",
+          "value": "Q31"
+        },
+        {
+          "label": "Q32 · ref 参数与调用方变量（原题号 Q152）",
+          "value": "Q32"
+        },
+        {
+          "label": "Q33 · TryParse 失败时的输出（原题号 Q153）",
+          "value": "Q33"
+        },
+        {
+          "label": "Q34 · 局部函数的声明与调用（原题号 Q154）",
+          "value": "Q34"
+        },
+        {
+          "label": "Q35 · 解构赋值与弃元（原题号 Q155）",
+          "value": "Q35"
+        },
+        {
+          "label": "Q36 · 字面量选择哪一个重载（原题号 Q156）",
+          "value": "Q36"
+        },
+        {
+          "label": "Q37 · yield break 与枚举结束（原题号 Q157）",
+          "value": "Q37"
+        },
+        {
+          "label": "Q38 · 同一序列的两次枚举（原题号 Q158）",
+          "value": "Q38"
+        },
+        {
+          "label": "Q39 · foreach 退出与迭代器清理（原题号 Q159）",
+          "value": "Q39"
+        },
+        {
+          "label": "Q40 · yield 与异常处理块（原题号 Q160）",
+          "value": "Q40"
+        },
+        {
+          "label": "Q41 · 把参数交给基类构造函数（原题号 Q161）",
+          "value": "Q41"
+        },
+        {
+          "label": "Q42 · 私有 setter 与类内状态更新（原题号 Q162）",
+          "value": "Q42"
+        },
+        {
+          "label": "Q43 · 对象初始化器与构造函数（原题号 Q163）",
+          "value": "Q43"
+        },
+        {
+          "label": "Q44 · 静态字段与实例状态（原题号 Q164）",
+          "value": "Q44"
+        },
+        {
+          "label": "Q45 · 记录相等与普通类相等（原题号 Q165）",
+          "value": "Q45"
+        },
+        {
+          "label": "Q46 · record struct 的 with 更新（原题号 Q166）",
+          "value": "Q46"
+        },
+        {
+          "label": "Q47 · sealed override 与继续重写（原题号 Q167）",
+          "value": "Q47"
+        },
+        {
+          "label": "Q48 · override 内的 base 调用（原题号 Q168）",
+          "value": "Q48"
+        },
+        {
+          "label": "Q49 · 扩展方法语法与静态调用（原题号 Q169）",
+          "value": "Q49"
+        },
+        {
+          "label": "Q50 · 接口属性与实现类（原题号 Q170）",
+          "value": "Q50"
+        },
+        {
+          "label": "Q51 · new() 约束与构造函数（原题号 Q171）",
+          "value": "Q51"
+        },
+        {
+          "label": "Q52 · 泛型约束与比较操作（原题号 Q172）",
+          "value": "Q52"
+        },
+        {
+          "label": "Q53 · 序列接口的协变（原题号 Q173）",
+          "value": "Q53"
+        },
+        {
+          "label": "Q54 · 回调参数的逆变（原题号 Q174）",
+          "value": "Q54"
+        },
+        {
+          "label": "Q55 · 排序比较器与顺序（原题号 Q175）",
+          "value": "Q55"
+        },
+        {
+          "label": "Q56 · Func 的组合调用（原题号 Q176）",
+          "value": "Q56"
+        },
+        {
+          "label": "Q57 · static lambda 的参数与使用（原题号 Q177）",
+          "value": "Q57"
+        },
+        {
+          "label": "Q58 · 多播调用遇到异常（原题号 Q178）",
+          "value": "Q58"
+        },
+        {
+          "label": "Q59 · 事件订阅与委托退订（原题号 Q179）",
+          "value": "Q59"
+        },
+        {
+          "label": "Q60 · 泛型方法的类型推断（原题号 Q180）",
+          "value": "Q60"
+        },
+        {
+          "label": "Q61 · catch 与 finally 的执行顺序（原题号 Q181）",
+          "value": "Q61"
+        },
+        {
+          "label": "Q62 · catch 的顺序与可达性（原题号 Q182）",
+          "value": "Q62"
+        },
+        {
+          "label": "Q63 · 异常包装与 InnerException（原题号 Q183）",
+          "value": "Q63"
+        },
+        {
+          "label": "Q64 · 参数异常的参数名（原题号 Q184）",
+          "value": "Q64"
+        },
+        {
+          "label": "Q65 · 异常过滤器与后续 catch（原题号 Q185）",
+          "value": "Q65"
+        },
+        {
+          "label": "Q66 · using 声明的释放边界（原题号 Q186）",
+          "value": "Q66"
+        },
+        {
+          "label": "Q67 · 包装读取器是否拥有底层流（原题号 Q187）",
+          "value": "Q67"
+        },
+        {
+          "label": "Q68 · 异步释放的故障传播（原题号 Q188）",
+          "value": "Q68"
+        },
+        {
+          "label": "Q69 · Stream.Read 的读取数量（原题号 Q189）",
+          "value": "Q69"
+        },
+        {
+          "label": "Q70 · using 的空资源处理（原题号 Q190）",
+          "value": "Q70"
+        },
+        {
+          "label": "Q71 · 查询表达式中的排序与投影（原题号 Q191）",
+          "value": "Q71"
+        },
+        {
+          "label": "Q72 · 查询 let 与中间计算（原题号 Q192）",
+          "value": "Q72"
+        },
+        {
+          "label": "Q73 · 展平查询与外侧标签（原题号 Q193）",
+          "value": "Q73"
+        },
+        {
+          "label": "Q74 · 分组后的数量求和（原题号 Q194）",
+          "value": "Q74"
+        },
+        {
+          "label": "Q75 · 左外连接与未匹配项（原题号 Q195）",
+          "value": "Q75"
+        },
+        {
+          "label": "Q76 · 排序键相同时的元素顺序（原题号 Q196）",
+          "value": "Q76"
+        },
+        {
+          "label": "Q77 · 分页的跳过与取出数量（原题号 Q197）",
+          "value": "Q77"
+        },
+        {
+          "label": "Q78 · 空序列上的 All 与 Any（原题号 Q198）",
+          "value": "Q78"
+        },
+        {
+          "label": "Q79 · ToLookup 与同键多项（原题号 Q199）",
+          "value": "Q79"
+        },
+        {
+          "label": "Q80 · 查询创建与源集合修改（原题号 Q200）",
+          "value": "Q80"
+        },
+        {
+          "label": "Q81 · await 已完成的 Task（原题号 Q201）",
+          "value": "Q81"
+        },
+        {
+          "label": "Q82 · WhenAny 与获胜任务的异常（原题号 Q202）",
+          "value": "Q82"
+        },
+        {
+          "label": "Q83 · WhenAll 的结果顺序（原题号 Q203）",
+          "value": "Q83"
+        },
+        {
+          "label": "Q84 · async 方法的异常传播（原题号 Q204）",
+          "value": "Q84"
+        },
+        {
+          "label": "Q85 · 取消令牌与检查点（原题号 Q205）",
+          "value": "Q85"
+        },
+        {
+          "label": "Q86 · 异步序列的枚举（原题号 Q206）",
+          "value": "Q86"
+        },
+        {
+          "label": "Q87 · await foreach 提前退出的收尾（原题号 Q207）",
+          "value": "Q87"
+        },
+        {
+          "label": "Q88 · SemaphoreSlim 的许可与等待（原题号 Q208）",
+          "value": "Q88"
+        },
+        {
+          "label": "Q89 · CompareExchange 的返回值（原题号 Q209）",
+          "value": "Q89"
+        },
+        {
+          "label": "Q90 · WaitAsync 的取消边界（原题号 Q210）",
+          "value": "Q90"
+        },
+        {
+          "label": "Q91 · 本机缓冲区的释放契约（原题号 Q211）",
+          "value": "Q91"
+        },
+        {
+          "label": "Q92 · 封闭泛型类型与泛型定义（原题号 Q212）",
+          "value": "Q92"
+        },
+        {
+          "label": "Q93 · 通过反射读取特性（原题号 Q213）",
+          "value": "Q93"
+        },
+        {
+          "label": "Q94 · 表达式树与捕获变量（原题号 Q214）",
+          "value": "Q94"
+        },
+        {
+          "label": "Q95 · dynamic 的成员绑定（原题号 Q215）",
+          "value": "Q95"
+        },
+        {
+          "label": "Q96 · Span 切片与后备数组（原题号 Q216）",
+          "value": "Q96"
+        },
+        {
+          "label": "Q97 · field 支持的属性规范化（原题号 Q217）",
+          "value": "Q97"
+        },
+        {
+          "label": "Q98 · 扩展属性与对象成员（原题号 Q218）",
+          "value": "Q98"
+        },
+        {
+          "label": "Q99 · 源生成器与分析器的分工（原题号 Q219）",
+          "value": "Q99"
+        },
+        {
+          "label": "Q100 · unsafe、指针与 GC（原题号 Q220）",
+          "value": "Q100"
+        },
+        {
+          "label": "Q101 · 结构体复制与数值字段（原题号 Q221）",
+          "value": "Q101"
+        },
+        {
+          "label": "Q102 · 类变量赋值与对象状态（原题号 Q222）",
+          "value": "Q102"
+        },
+        {
+          "label": "Q103 · default 与显式结构构造器（原题号 Q223）",
+          "value": "Q103"
+        },
+        {
+          "label": "Q104 · null-forgiving 与可空分析（原题号 Q224）",
+          "value": "Q104"
+        },
+        {
+          "label": "Q105 · readonly 字段的初始化（原题号 Q225）",
+          "value": "Q105"
+        },
+        {
+          "label": "Q106 · 标志枚举的位组合（原题号 Q226）",
+          "value": "Q106"
+        },
+        {
+          "label": "Q107 · 从末尾索引与范围右端（原题号 Q227）",
+          "value": "Q107"
+        },
+        {
+          "label": "Q108 · 自定义索引器的访问（原题号 Q228）",
+          "value": "Q108"
+        },
+        {
+          "label": "Q109 · 自定义运算符的调用（原题号 Q229）",
+          "value": "Q109"
+        },
+        {
+          "label": "Q110 · XML 文档注释与参数校验（原题号 Q230）",
+          "value": "Q110"
+        },
+        {
+          "label": "Q111 · required 成员的初始化（原题号 Q231）",
+          "value": "Q111"
+        },
+        {
+          "label": "Q112 · 普通类的主构造参数（原题号 Q232）",
+          "value": "Q112"
+        },
+        {
+          "label": "Q113 · 抽象类的公共流程（原题号 Q233）",
+          "value": "Q113"
+        },
+        {
+          "label": "Q114 · 泛型数学的运算约束（原题号 Q234）",
+          "value": "Q114"
+        },
+        {
+          "label": "Q115 · 同一线程的嵌套 lock（原题号 Q235）",
+          "value": "Q115"
+        },
+        {
+          "label": "Q116 · CPU 工作与异步 I/O 的选择（原题号 Q236）",
+          "value": "Q116"
+        },
+        {
+          "label": "Q117 · Release 下的条件编译（原题号 Q237）",
+          "value": "Q117"
+        },
+        {
+          "label": "Q118 · SDK 与目标框架各自决定什么（原题号 Q238）",
+          "value": "Q118"
+        },
+        {
+          "label": "Q119 · GC 与 IDisposable 的职责（原题号 Q239）",
+          "value": "Q119"
+        },
+        {
+          "label": "Q120 · Native AOT 的动态能力边界（原题号 Q240）",
+          "value": "Q120"
+        },
+        {
+          "label": "Q121 · 修改对象和替换调用方变量（原题号 Q01）",
+          "value": "Q121"
+        },
+        {
+          "label": "Q122 · 值类型中的引用字段（原题号 Q02）",
+          "value": "Q122"
+        },
+        {
+          "label": "Q123 · List 中的 struct 如何写回（原题号 Q03）",
+          "value": "Q123"
+        },
+        {
+          "label": "Q124 · record 的相等性与复制深度（原题号 Q06）",
+          "value": "Q124"
+        },
+        {
+          "label": "Q125 · 可变哈希键会破坏什么（原题号 Q08）",
+          "value": "Q125"
+        },
+        {
+          "label": "Q126 · 泛型方法中的成员访问（原题号 Q09）",
+          "value": "Q126"
+        },
+        {
+          "label": "Q127 · 回调参数中变型的安全方向（原题号 Q11）",
+          "value": "Q127"
+        },
+        {
+          "label": "Q128 · var、object 与 dynamic 的绑定时机（原题号 Q12）",
+          "value": "Q128"
+        },
+        {
+          "label": "Q129 · override 与 new 的调用分派（原题号 Q13）",
+          "value": "Q129"
+        },
+        {
+          "label": "Q130 · 显式接口实现可以改变调用入口（原题号 Q14）",
+          "value": "Q130"
+        },
+        {
+          "label": "Q131 · 把 class 改成 struct 就能摆脱 GC 吗（原题号 Q41）",
+          "value": "Q131"
+        },
+        {
+          "label": "Q132 · object 中保存的是可变值的哪一份（原题号 Q42）",
+          "value": "Q132"
+        },
+        {
+          "label": "Q133 · 接口参数与受约束的泛型调用（原题号 Q43）",
+          "value": "Q133"
+        },
+        {
+          "label": "Q134 · Span 与 ReadOnlySpan 的数据关系（原题号 Q44）",
+          "value": "Q134"
+        },
+        {
+          "label": "Q135 · Span 与异步挂起（原题号 Q45）",
+          "value": "Q135"
+        },
+        {
+          "label": "Q136 · 池化缓冲区何时能归还（原题号 Q46）",
+          "value": "Q136"
+        },
+        {
+          "label": "Q137 · GC 没有释放业务已结束的对象（原题号 Q47）",
+          "value": "Q137"
+        },
+        {
+          "label": "Q138 · 对象存活与地址固定（原题号 Q49）",
+          "value": "Q138"
+        },
+        {
+          "label": "Q139 · 累计分配计数不能回答什么（原题号 Q51）",
+          "value": "Q139"
+        },
+        {
+          "label": "Q140 · 泛型代码共享会合并静态状态吗（原题号 Q52）",
+          "value": "Q140"
+        },
+        {
+          "label": "Q141 · volatile 与并发递增（原题号 Q56）",
+          "value": "Q141"
+        },
+        {
+          "label": "Q142 · 锁与多字段一致性（原题号 Q57）",
+          "value": "Q142"
+        },
+        {
+          "label": "Q143 · 并发字典保证工厂只执行一次吗（原题号 Q58）",
+          "value": "Q143"
+        },
+        {
+          "label": "Q144 · in 参数与结构体成员调用（原题号 Q60）",
+          "value": "Q144"
+        },
+        {
+          "label": "Q145 · 构造函数体的先后（原题号 Q81）",
+          "value": "Q145"
+        },
+        {
+          "label": "Q146 · 属性访问器的执行（原题号 Q84）",
+          "value": "Q146"
+        },
+        {
+          "label": "Q147 · public const 的发布边界（原题号 Q87）",
+          "value": "Q147"
+        },
+        {
+          "label": "Q148 · 可选参数与虚调用分两步（原题号 Q88）",
+          "value": "Q148"
+        },
+        {
+          "label": "Q149 · 命名实参的求值顺序（原题号 Q89）",
+          "value": "Q149"
+        },
+        {
+          "label": "Q150 · 默认接口实现的调用视图（原题号 Q90）",
+          "value": "Q150"
+        },
+        {
+          "label": "Q151 · 实例方法与扩展方法的绑定（原题号 Q94）",
+          "value": "Q151"
+        },
+        {
+          "label": "Q152 · 多播委托的返回值（原题号 Q98）",
+          "value": "Q152"
+        },
+        {
+          "label": "Q153 · await using 的完成边界与所有权（原题号 Q22）",
+          "value": "Q153"
+        },
+        {
+          "label": "Q154 · 事件重复订阅后的退订责任（原题号 Q27）",
+          "value": "Q154"
+        },
+        {
+          "label": "Q155 · IQueryable 的表达式在哪里执行（原题号 Q30）",
+          "value": "Q155"
+        },
+        {
+          "label": "Q156 · WhenAll 的故障完成与异常观察（原题号 Q34）",
+          "value": "Q156"
+        },
+        {
+          "label": "Q157 · 取消请求与清理完成（原题号 Q35）",
+          "value": "Q157"
+        },
+        {
+          "label": "Q158 · 任务查询的重复枚举（原题号 Q36）",
+          "value": "Q158"
+        },
+        {
+          "label": "Q159 · async void 应放在哪个边界（原题号 Q37）",
+          "value": "Q159"
+        },
+        {
+          "label": "Q160 · ConfigureAwait(false) 的精确边界（原题号 Q38）",
+          "value": "Q160"
+        }
+      ],
+      "default": "Q124"
+    },
+    {
+      "id": "examConfiguration",
+      "type": "pickString",
+      "description": "编译配置（题干另有指定时按题干选择）",
+      "options": [
+        "Debug",
+        "Release"
+      ],
+      "default": "Debug"
+    }
+  ]
+}

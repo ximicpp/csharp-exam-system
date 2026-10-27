@@ -14,6 +14,19 @@ python scripts/quiz.py exam
 
 浏览器访问 `http://127.0.0.1:8765/`；按 Ctrl+C 停止。草稿保存在当前浏览器，报告在 `artifacts/quiz-reports/`。不要清理浏览器数据或报告目录，除非不再需要记录。
 
+## 每题一个 C# 工程
+
+[独立学习项目](exam-projects/README.md)包含与考试显示号一致的 Q01–Q160、解决方案和 VS Code 配置。每题可独立编辑、构建和调试；11 道题保留原始编译错误，整份解决方案构建会报告这些错误。
+
+在仓库根目录进入项目文件夹，初始化后打开该文件夹：
+
+```powershell
+cd exam-projects
+./setup.cmd
+```
+
+Windows 初始化会准备指定的 .NET SDK、VS Code 和推荐扩展；Linux / macOS 在 `exam-projects` 下运行 `bash setup.sh` 准备 SDK。初始化后在 VS Code 打开 `exam-projects`，打开题目中的 `Example.cs`，用 Ctrl+Shift+B 构建当前题，用 F5 调试。也可在该文件夹中运行 `dotnet run --project Q04`；Q117 使用 `dotnet run --project Q117 -c Release`。学习工程与浏览器考试共用题面，但不评分、不附答案。
+
 ## 多人服务
 
 在仓库根目录创建虚拟环境并安装哈希锁定的依赖：
