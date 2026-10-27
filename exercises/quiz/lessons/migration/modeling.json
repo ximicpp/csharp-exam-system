@@ -1,0 +1,104 @@
+{
+  "group": "modeling",
+  "title": "对象模型与 API 讲解",
+  "intro": "这 8 题关注调用者真正依赖的 API 行为：初始化顺序、求值时机、版本变化、接口视图和回调返回契约。基础成员语法已由配套卷覆盖。",
+  "sections": [
+    {
+      "title": "构造顺序与实参由谁决定",
+      "questions": [
+        "Q81",
+        "Q88",
+        "Q89"
+      ],
+      "code": [
+        {
+          "path": "tests/Quiz.Checks/Modeling.cs",
+          "region": "Q88"
+        }
+      ],
+      "result": "OptionalDispatch() 返回 (10, 20)：两次都执行派生实现，省略的实参却由不同的静态声明补入。",
+      "explanation": [
+        "构造时要区分字段初始化与构造函数体；基类构造阶段不应假定派生类构造函数体已执行完毕。",
+        "可选参数在调用处补入，然后才进行虚分派。命名参数也不会按形参声明顺序重新排列实参表达式的求值。"
+      ],
+      "takeaway": "公共虚 API 保持默认值一致，实参表达式尽量简单；避免让调用视图和隐藏副作用改变业务行为。"
+    },
+    {
+      "title": "属性求值与公开常量的升级契约",
+      "questions": [
+        "Q84",
+        "Q87"
+      ],
+      "code": [
+        {
+          "path": "tests/Quiz.Checks/Modeling.cs",
+          "region": "Q84"
+        }
+      ],
+      "result": "ReadProperty() 返回 (1, 2)：两次属性访问执行两次 getter。已编译客户端中的 const 值不会随替换库更新。",
+      "explanation": [
+        "属性访问是访问器执行，可能计算、校验或产生副作用。需要一次读取的稳定值时先保存局部结果。",
+        "const 使用处在编译客户端时嵌入值。若值应随库版本更新，从 API 设计时使用合适的运行时字段或属性；旧客户端要重新编译才会改变已有调用方式。"
+      ],
+      "takeaway": "把访问成本、稳定性和版本更新行为作为 API 契约，而不是由字段或属性的外观推断。"
+    },
+    {
+      "title": "默认接口实现需要接口视图",
+      "questions": [
+        "Q90"
+      ],
+      "code": [
+        {
+          "path": "tests/Quiz.Checks/Modeling.cs",
+          "region": "Q90"
+        }
+      ],
+      "result": "DefaultInterface() 返回 (\"default\", true)：接口调用可用，类成员反射查找仍为空。",
+      "explanation": [
+        "默认接口实现为接口契约提供方法体，不自动把同名成员加入实现类的公开成员表。",
+        "调用方取得合适的接口视图后可以使用该实现；用具体类型的成员查找或反射规则不能直接代替接口调用。"
+      ],
+      "takeaway": "明确 API 暴露的视图及兼容性目标；添加默认接口实现不等于为每个类新增公开成员。"
+    },
+    {
+      "title": "扩展方法不会覆盖适用的实例成员",
+      "questions": [
+        "Q94"
+      ],
+      "code": [
+        {
+          "path": "tests/Quiz.Checks/Modeling.cs",
+          "region": "Q94-types"
+        },
+        {
+          "path": "tests/Quiz.Checks/Modeling.cs",
+          "region": "Q94-call"
+        }
+      ],
+      "result": "BindExtension() 返回 (true, false)：实例 Contains 与显式扩展类静态调用进入不同方法。",
+      "explanation": [
+        "扩展方法参与编译期查找，但适用的实例成员优先。扩展语法不改变目标对象的运行时类型。",
+        "类型后来添加实例成员，可能改变重新编译后的绑定结果；显式以扩展类名调用则明确选择静态方法。"
+      ],
+      "takeaway": "扩展 API 避免与核心成员产生易混淆的同名行为，升级时核对重新编译的调用路径。"
+    },
+    {
+      "title": "多播调用不自动汇总返回值",
+      "questions": [
+        "Q98"
+      ],
+      "code": [
+        {
+          "path": "tests/Quiz.Checks/Modeling.cs",
+          "region": "Q98"
+        }
+      ],
+      "result": "InvokeDelegates() 返回 (10, \"first,second\")：依次调用两个处理器，普通组合调用的返回值来自最后一个处理器。",
+      "explanation": [
+        "多播委托按调用列表顺序调用；有返回值时，普通调用不会生成全部返回值的集合。",
+        "若需要汇总各个结果、逐处理器处理异常或决定停止策略，应显式遍历调用列表或使用处理器集合。"
+      ],
+      "takeaway": "在公开回调契约里说明返回值与故障策略，不能让订阅顺序悄悄决定业务结果。"
+    }
+  ]
+}

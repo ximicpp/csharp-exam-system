@@ -1,0 +1,10 @@
+**/bin/
+**/obj/
+__pycache__/
+.venv/
+.tools/
+artifacts/
+.env
+node_modules/
+data/quiz-team-roster.json
+*.sqlite3*

@@ -1,0 +1,112 @@
+{
+  "group": "execution",
+  "title": "资源与执行讲解",
+  "intro": "这 8 题补足扩展卷的生命周期责任：谁拥有资源和任务，何时可以确认结束，故障和取消后如何收尾。",
+  "sections": [
+    {
+      "title": "异步释放的完成边界",
+      "questions": [
+        "Q22"
+      ],
+      "code": [
+        {
+          "path": "tests/Quiz.Checks/Execution.cs",
+          "region": "Q22"
+        }
+      ],
+      "result": "必须等待完整的 operation 成功终结，才可确认题设中的异步释放已正常完成；清理开始不代表清理结束。",
+      "explanation": [
+        "await using 把异步释放纳入所在操作的完成路径；取得 Task、释放开始信号或解除门闩都不能代替等待整个操作。",
+        "所有权由 API 指定，释放自身也可能失败。方法返回的 Task 应包含它所负责的清理，调用方需要观察其成功或故障终态。"
+      ],
+      "takeaway": "让完成句柄覆盖承诺的全部工作与清理，而不是只覆盖主体计算。"
+    },
+    {
+      "title": "事件注册也是生命周期责任",
+      "questions": [
+        "Q27"
+      ],
+      "code": [
+        {
+          "path": "tests/Quiz.Checks/Execution.cs",
+          "region": "Q27"
+        }
+      ],
+      "result": "同一 handler 订阅两次、退订一次后仍有一个条目；再次退订才能解除全部注册。",
+      "explanation": [
+        "普通字段式事件保留重复条目；一次 -= 移除一个匹配注册。发布者寿命更长时，注册还可能保留订阅者。",
+        "丢弃局部引用或停止业务回调不等于退订。保存可匹配的委托，并明确重复初始化和关闭时的配对责任。"
+      ],
+      "takeaway": "组件生命周期同时管理事件注册，不能只管理自己的字段和业务状态。"
+    },
+    {
+      "title": "执行位置与重复启动任务",
+      "questions": [
+        "Q30",
+        "Q36"
+      ],
+      "code": [
+        {
+          "path": "tests/Quiz.Checks/Execution.cs",
+          "region": "Q36"
+        }
+      ],
+      "result": "Q36() 返回 (0, 3, 6)：Select 描述没有缓存 Task，两次 WhenAll 分别调用三次工厂；先物化任务则复用同一批操作。",
+      "explanation": [
+        "AsEnumerable 让后续标准 Enumerable 操作在本地执行，不替远端提供程序增加翻译能力，也不立即物化上游。",
+        "包含任务工厂的延迟查询每次枚举都可能重新启动操作。需要复用已启动任务时保存任务集合，不能只保存工厂查询。"
+      ],
+      "takeaway": "同时审查工作在哪里执行、执行几次，以及当前方法是否拥有所有已启动任务。"
+    },
+    {
+      "title": "WhenAll 完成与全部故障的观察",
+      "questions": [
+        "Q34"
+      ],
+      "code": [
+        {
+          "path": "tests/Quiz.Checks/Execution.cs",
+          "region": "Q34"
+        }
+      ],
+      "result": "组合 Task 在两个输入任务都终结后完成；其 Exception 包含两个故障，await 传播其中一个原始异常。",
+      "explanation": [
+        "组合操作的完成屏障与 await 的异常传播形式是两项不同契约；不能只从 catch 到的一项判断其他任务没有失败。",
+        "保留组合 Task，在处理路径中查看聚合故障。WhenAll 不自动遇错取消其他工作，取消策略需要调用方另行组织。"
+      ],
+      "takeaway": "故障记录与关闭流程覆盖整批任务，避免漏掉其他失败和未收尾工作。"
+    },
+    {
+      "title": "取消请求与可等待的完成句柄",
+      "questions": [
+        "Q35",
+        "Q37"
+      ],
+      "code": [
+        {
+          "path": "tests/Quiz.Checks/Execution.cs",
+          "region": "Q35"
+        }
+      ],
+      "result": "等待 work 观察到取消时，题设中正常完成的 finally 已结束；Cancel 或清理开始信号都不足以证明结束。",
+      "explanation": [
+        "取消是协作协议：传递令牌、设置检查点、执行清理并等待终态。资源只能在最后使用者结束后释放。",
+        "async void 不向调用方提供覆盖整次操作的 Task。确实要求 void 的事件边界应内部 await 可等待主体，并处理异常。"
+      ],
+      "takeaway": "关闭流程保存和等待已启动操作；不要把“无需返回数据”理解成“无需等待完成”。"
+    },
+    {
+      "title": "恢复位置与逻辑上下文分开",
+      "questions": [
+        "Q38"
+      ],
+      "code": [],
+      "result": "ConfigureAwait(false) 对本次等待不要求恢复到原调度上下文，但不强制切换线程，也不抑制 ExecutionContext 的流动。",
+      "explanation": [
+        "SynchronizationContext 或 TaskScheduler 涉及恢复位置，ExecutionContext 承载逻辑环境数据；它们不能互相替代。",
+        "已经完成的等待可能直接继续，调用方也有自己的 await 策略。不能用 false 作为后台执行、隔离环境或深复制上下文对象的承诺。"
+      ],
+      "takeaway": "库代码的等待策略和业务上下文流动分别设计，避免把线程安排当成正确性条件。"
+    }
+  ]
+}

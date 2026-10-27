@@ -1,0 +1,1218 @@
+[
+  {
+    "id": "Q21",
+    "title": "异常路径上的资源释放",
+    "kind": "single",
+    "tier": "core",
+    "topics": [
+      "using",
+      "确定性释放"
+    ],
+    "scenario": "",
+    "prompt": "调用 Q21() 返回什么？这里 Dispose 只记录日志，不抛异常。",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Execution.cs",
+        "region": "Q21"
+      }
+    ],
+    "options": {
+      "A": "body,first,second,caught",
+      "B": "body,second,first,caught",
+      "C": "body,caught,second,first",
+      "D": "body,caught"
+    },
+    "answers": [
+      "B"
+    ],
+    "rationale": {
+      "A": "释放按嵌套作用域逆序进行，后声明的 second 先释放。",
+      "B": "退出 try 的作用域先释放 second、first，之后进入外层 catch。",
+      "C": "这些 using 声明位于 try 的内部，进入外层 catch 之前已完成释放。",
+      "D": "异常也经过释放路径，不需要等 GC。"
+    },
+    "takeaway": "把 using 理解为词法作用域内的 finally 释放责任；对象仍可被引用不影响 Dispose 的调用。",
+    "learn": [
+      "docs/04-resources.md",
+      "docs/14-execution-model.md"
+    ],
+    "sources": [
+      {
+        "title": "using statement",
+        "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/using"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "note": "运行检查完整日志顺序；仅覆盖本题正常返回的 Dispose，不声称 Dispose 抛异常时仍保留原始业务异常。",
+      "checks": [
+        "Q21"
+      ]
+    },
+    "explanation": {
+      "principle": "using 在退出对应作用域时履行释放责任，包括异常退出。多层资源通常按获取顺序的逆序释放，再继续向外传播异常。",
+      "steps": [
+        "先记录 body；异常使控制流退出两个 using 所在的 try，先调用 second.Dispose，再调用 first.Dispose。",
+        "两次释放都不抛异常，原异常随后被外层 catch 接住，最终日志为 body、second、first、caught。"
+      ],
+      "boundary": "这是题设中释放成功的路径；Dispose 自己失败时，还需分析异常替换和后续清理，不能只背一条日志顺序。"
+    }
+  },
+  {
+    "id": "Q22",
+    "title": "await using 的完成边界与所有权",
+    "kind": "single",
+    "tier": "core",
+    "topics": [
+      "IAsyncDisposable",
+      "所有权"
+    ],
+    "scenario": "方法已接管连接的释放责任，调用方要等连接完全关闭后再结束服务。",
+    "prompt": "在所示 UseOwnedAsync 契约下，调用方观察到哪个时点，才能确定 lease 的异步清理已成功完成？",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Execution.cs",
+        "region": "Q22"
+      }
+    ],
+    "options": {
+      "A": "UseOwnedAsync 已返回 operation 这个 Task 对象。",
+      "B": "lease.DisposeStarted.Task 已成功完成。",
+      "C": "await operation 已成功结束。",
+      "D": "finish.SetResult() 已返回。"
+    },
+    "answers": [
+      "C"
+    ],
+    "rationale": {
+      "A": "返回 Task 只交出完成句柄；本题此时 DisposeAsync 正在等待 finish。",
+      "B": "DisposeStarted 只表示清理已经开始，其后仍需等待 finish 并设置 Disposed。",
+      "C": "await using 将 DisposeAsync 纳入 operation 的完成过程，成功等待 operation 后清理已结束。",
+      "D": "SetResult 解除清理的等待，不保证清理 continuation 在该调用返回前已经执行；应等待 operation。"
+    },
+    "takeaway": "资源所有权是 API 契约，await using 是履行异步释放责任的语法。释放失败同样需要纳入异常设计。",
+    "learn": [
+      "docs/04-resources.md",
+      "docs/08-async.md"
+    ],
+    "sources": [
+      {
+        "title": "using statement",
+        "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/using"
+      },
+      {
+        "title": "Implement a DisposeAsync method",
+        "url": "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-disposeasync"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "note": "用完成信号阻塞并释放 DisposeAsync，检查外层任务的完成边界和最终状态；所有权结论是题面契约下的工程判断。",
+      "checks": [
+        "Q22"
+      ]
+    },
+    "explanation": {
+      "principle": "await using 会等待 DisposeAsync；返回的操作 Task 包含方法体和异步释放，不只表示业务主体已经执行完。",
+      "steps": [
+        "清理开始信号触发时，DisposeAsync 仍在等待 finishDispose，所以 operation 尚未完成，不能在此时宣布资源释放成功。",
+        "finish 完成后设置 Disposed，再结束 UseOwnedAsync；成功 await operation 才同时确认主体和清理成功。"
+      ],
+      "boundary": "所有权来自 API 约定，而不是 await using 自动推断；如果清理失败，操作也可能以异常完成。"
+    }
+  },
+  {
+    "id": "Q23",
+    "title": "异常过滤器观察的是哪个阶段",
+    "kind": "single",
+    "tier": "deep",
+    "topics": [
+      "异常过滤器",
+      "栈展开"
+    ],
+    "scenario": "",
+    "prompt": "调用 Q23() 返回哪一项？",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Execution.cs",
+        "region": "Q23"
+      }
+    ],
+    "options": {
+      "A": "filter:False,finally,catch:True",
+      "B": "finally,filter:True,catch:True",
+      "C": "filter:False,catch:False,finally",
+      "D": "finally,catch:True,filter:True"
+    },
+    "answers": [
+      "A"
+    ],
+    "rationale": {
+      "A": "异常处理器搜索时先求值过滤器，随后展开栈执行内层 finally，再进入 catch。",
+      "B": "过滤器发生在为进入此处理器而展开栈之前，不能假设清理已完成。",
+      "C": "catch 主体在内层 finally 执行之后运行。",
+      "D": "过滤器用于选择处理器，不会在处理完异常后补执行。"
+    },
+    "takeaway": "异常过滤器适合筛选和诊断，不要把它当成清理后运行的普通 if；副作用会放大排障难度。",
+    "learn": [
+      "docs/14-execution-model.md",
+      "docs/04-resources.md"
+    ],
+    "sources": [
+      {
+        "title": "Exception-handling statements",
+        "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/exception-handling-statements"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "note": "运行检查 filter、finally、catch 的先后与布尔状态；不依赖完整堆栈文本。",
+      "checks": [
+        "Q23"
+      ]
+    },
+    "explanation": {
+      "principle": "异常过滤器在查找处理器时求值；选定处理器后，栈展开才执行途中 finally。这与 catch 内再写 if 的阶段不同。",
+      "steps": [
+        "Accept 先读取尚未改变的 cleaned，记录 filter:False 并同意捕获；随后内层 finally 设置 cleaned 为 true。",
+        "进入外层 catch 时清理已完成，记录 catch:True，因此日志中过滤器在 finally 之前，catch 在之后。"
+      ],
+      "boundary": "过滤器可用于筛选和诊断，但不应依赖“资源已经清理”的假设，也宜避免改变程序状态的副作用。"
+    }
+  },
+  {
+    "id": "Q24",
+    "title": "记录异常后如何保持诊断链",
+    "kind": "single",
+    "tier": "core",
+    "topics": [
+      "异常重抛",
+      "堆栈"
+    ],
+    "scenario": "库在 catch 中记录日志后，需要继续向上层传播同一个异常，并保留原始抛出位置。",
+    "prompt": "日志已经记录完成，仍处于捕获该异常的 catch 块中。哪种做法最直接满足目标？",
+    "code": [],
+    "options": {
+      "A": "使用 throw ex;，与不带表达式的 throw 完全等价。",
+      "B": "仅创建同类型、同 Message 的新异常并抛出。",
+      "C": "返回默认值，让上层从日志重建失败。",
+      "D": "使用 throw; 重新抛出当前异常。"
+    },
+    "answers": [
+      "D"
+    ],
+    "rationale": {
+      "A": "throw ex 会更新抛出位置对应的堆栈信息，不能与 throw 等同。",
+      "B": "仅复制类型和消息不保留原异常对象与原始诊断链。",
+      "C": "吞掉异常改变了失败契约，不满足继续向上报告的目标。",
+      "D": "catch 内不带表达式的 throw 保留当前异常的原始堆栈。"
+    },
+    "takeaway": "排障能力也是异常契约的一部分；需要转换异常时明确包装原因和 InnerException，而不是无意丢失来源。",
+    "learn": [
+      "docs/04-resources.md"
+    ],
+    "sources": [
+      {
+        "title": "Exception-handling statements",
+        "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/exception-handling-statements"
+      }
+    ],
+    "verification": {
+      "kind": "documentation",
+      "note": "人工核对官方 throw/throw ex 契约。不以依赖 JIT 内联、文件路径或完整堆栈格式的测试作为证明。"
+    },
+    "explanation": {
+      "principle": "catch 内的 throw; 重新抛出当前异常并保留原始堆栈。throw error; 从新的抛出语句重新建立相关堆栈位置。",
+      "steps": [
+        "题设已在捕获当前异常的 catch 内，日志记录完后仍需把同一故障交给调用方，没有引入新错误类型的需求。",
+        "直接 throw; 保留故障来源；包装异常则是改变抽象边界的另一个决定，需明确保存 InnerException。"
+      ],
+      "boundary": "离开 catch 后不能任意使用 throw;；跨位置重新传播通常需要 ExceptionDispatchInfo 等明确机制。"
+    }
+  },
+  {
+    "id": "Q25",
+    "title": "闭包与外部变量",
+    "kind": "single",
+    "tier": "core",
+    "topics": [
+      "闭包",
+      "捕获"
+    ],
+    "scenario": "",
+    "prompt": "调用 Q25() 返回什么？",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Execution.cs",
+        "region": "Q25"
+      }
+    ],
+    "options": {
+      "A": "10,10",
+      "B": "20,20",
+      "C": "10,30",
+      "D": "20,30"
+    },
+    "answers": [
+      "D"
+    ],
+    "rationale": {
+      "A": "lambda 捕获局部变量，不自动复制创建委托时的值。",
+      "B": "第一次调用不缓存结果，第二次会再次读取 limit。",
+      "C": "第一次调用发生在 limit 改为 20 之后。",
+      "D": "两次调用都读取同一被捕获变量在当时的值。"
+    },
+    "takeaway": "需要快照就创建独立局部值并明确捕获它；被捕获变量可随委托存活，注意保留链。不要直接套用 C++ 值捕获直觉。",
+    "learn": [
+      "docs/06-delegates.md",
+      "docs/14-execution-model.md"
+    ],
+    "sources": [
+      {
+        "title": "Lambda expressions",
+        "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/lambda-expressions"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "note": "运行两次回调并检查结果；不绑定编译器生成闭包类型的名字或布局。",
+      "checks": [
+        "Q25"
+      ]
+    },
+    "explanation": {
+      "principle": "闭包捕获的是变量，而不是创建委托时对变量取一次快照。委托执行时读取被捕获变量当时保存的值。",
+      "steps": [
+        "创建 read 时 limit 为 10，但没有立即调用 lambda；随后改成 20，第一次 read 因而取得 20。",
+        "再改成 30 后第二次调用仍读同一变量，返回 30，而不是创建时的 10 或第一次的 20。"
+      ],
+      "boundary": "需要快照时，应把要固定的值复制到单独的变量；捕获引用值也不等于深复制所引用对象。"
+    }
+  },
+  {
+    "id": "Q26",
+    "title": "static lambda 的捕获限制",
+    "kind": "single",
+    "tier": "core",
+    "topics": [
+      "static lambda",
+      "闭包"
+    ],
+    "scenario": "",
+    "prompt": "本题源码故意不能编译。已知 accept 的声明失败，哪项对根因与修正的判断正确？",
+    "code": [
+      {
+        "path": "exercises/quiz/compile/Q26.cs",
+        "region": "Q26"
+      }
+    ],
+    "options": {
+      "A": "static lambda 禁止捕获外围局部变量；可将阈值改为委托的显式输入参数。",
+      "B": "失败仅因 threshold 是可变局部；在声明后不再对它赋值，就允许 static lambda 捕获。",
+      "C": "static lambda 只禁止捕获值类型；将阈值放进 class 实例再捕获实例即可。",
+      "D": "失败来自 lambda 参数类型推断；给 value 显式标注 int 即可合法捕获 threshold。"
+    },
+    "answers": [
+      "A"
+    ],
+    "rationale": {
+      "A": "static lambda 禁止捕获外围局部变量和实例状态；显式参数可以表达依赖。",
+      "B": "一个普通局部变量即使实际上不再赋值，仍是需要捕获的变量；不会自动成为常量定义。",
+      "C": "捕获引用类型局部变量也被禁止，改为对象容器不改变外围捕获这一事实。",
+      "D": "参数类型推断不是错误根因；显式标注不会解除静态匿名函数的捕获约束。"
+    },
+    "takeaway": "static lambda 是依赖边界检查工具，不是无条件零分配或纯函数保证。",
+    "learn": [
+      "docs/06-delegates.md",
+      "docs/10-performance.md"
+    ],
+    "sources": [
+      {
+        "title": "Lambda expressions",
+        "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/lambda-expressions"
+      }
+    ],
+    "verification": {
+      "kind": "compile-error",
+      "note": "负向编译检查 CS8820，这是语言错误；不依赖 nullable 警告提升策略。",
+      "path": "exercises/quiz/compile/Q26.cs",
+      "diagnostics": [
+        "CS8820"
+      ]
+    },
+    "explanation": {
+      "principle": "static lambda 禁止捕获外围局部变量和实例状态，这让隐藏依赖在编译期暴露。它并不禁止使用自己的参数或可访问静态成员。",
+      "steps": [
+        "threshold 是 Main 的局部变量，lambda 想在执行时使用它，就需要建立捕获关系；static 修饰符禁止这条关系。",
+        "把 threshold 作为委托的显式参数传入，或由合适的静态成员提供，才能让依赖来源符合声明。"
+      ],
+      "boundary": "static lambda 不自动保证纯函数、线程安全或零分配；这些还取决于方法体和实际使用方式。"
+    }
+  },
+  {
+    "id": "Q27",
+    "title": "事件重复订阅后的退订责任",
+    "kind": "single",
+    "tier": "core",
+    "topics": [
+      "事件",
+      "委托",
+      "生命周期"
+    ],
+    "scenario": "组件重复初始化两次，关闭时只退订一次；发布者寿命比组件更长。",
+    "prompt": "执行 Q27 中的第一次 -= 和 Raise 后，若要解除该 handler 的全部事件注册，应采取哪项操作？这里是所示的普通字段式事件。",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Execution.cs",
+        "region": "Q27"
+      }
+    ],
+    "options": {
+      "A": "无需继续退订，一次 -= 已移除该 handler 的全部注册。",
+      "B": "再对保存的 handler 执行一次 -=，移除剩余注册。",
+      "C": "只丢弃局部 handler 引用，发布者随后就不再引用它。",
+      "D": "再调用一次 Raise，剩余注册会在回调执行后自动失效。"
+    },
+    "answers": [
+      "B"
+    ],
+    "rationale": {
+      "A": "重复 += 不去重；同一单播委托的一次 -= 只删除最后一个匹配项。",
+      "B": "首次退订后仍有一个注册并产生一次回调；第二次退订把调用列表清空，Q27 返回 (1, 1, 0)。",
+      "C": "局部变量与发布者的调用列表是不同引用来源；丢弃局部引用不会改动调用列表。",
+      "D": "普通事件调用不会自动退订，重复 Raise 只会再次执行仍在列表中的 handler。"
+    },
+    "takeaway": "保存可匹配的委托并配对订阅；仅停止业务行为不等于消除事件保留链。",
+    "learn": [
+      "docs/06-delegates.md",
+      "docs/13-memory.md"
+    ],
+    "sources": [
+      {
+        "title": "Subscribe to and unsubscribe from events",
+        "url": "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/events/how-to-subscribe-to-and-unsubscribe-from-events"
+      },
+      {
+        "title": "Delegate.Remove",
+        "url": "https://learn.microsoft.com/en-us/dotnet/api/system.delegate.remove?view=net-10.0"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "note": "运行验证回调次数与真实调用列表长度；保留链依据官方说明，不等待 GC 来猜测是否退订。",
+      "checks": [
+        "Q27"
+      ]
+    },
+    "explanation": {
+      "principle": "普通字段式事件保存多播委托调用列表。重复订阅保留重复条目，一次 -= 只移除一个匹配的注册。",
+      "steps": [
+        "同一个 handler 连加两次后有两个条目；第一次退订移除其中一个，所以 Raise 仍调用一次，Remaining 为 1。",
+        "再对保存的同一 handler 退订一次才能清空，返回 (1, 1, 0)；新写一个看似相同的 lambda 不应当作同一注册凭据。"
+      ],
+      "boundary": "自定义事件访问器可定义其他行为；这里的结论依赖题设中的普通字段式事件。"
+    }
+  },
+  {
+    "id": "Q28",
+    "title": "查询的创建与重复枚举",
+    "kind": "single",
+    "tier": "core",
+    "topics": [
+      "LINQ",
+      "延迟执行",
+      "重复枚举"
+    ],
+    "scenario": "",
+    "prompt": "Q28() 返回 (Before, First, Second, A, B)。哪项正确？这里仅在两次完整枚举之间修改 List。",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Execution.cs",
+        "region": "Q28"
+      }
+    ],
+    "options": {
+      "A": "(3, 3, 3, \"2\", \"2\")",
+      "B": "(0, 3, 3, \"2\", \"2\")",
+      "C": "(0, 3, 7, \"2\", \"2,4\")",
+      "D": "(0, 0, 0, \"2\", \"2,4\")"
+    },
+    "answers": [
+      "C"
+    ],
+    "rationale": {
+      "A": "Where 创建查询时没有执行谓词，也没有缓存结果。",
+      "B": "第二次枚举还会扫描当时的四个元素。",
+      "C": "创建查询不调用谓词；两轮分别检查三个和四个元素，并看到新增的 4。",
+      "D": "两个 string.Join 都消费查询，因此谓词实际执行。"
+    },
+    "takeaway": "区分查询描述与物化结果；重复枚举可重复 I/O 或副作用。计数只用于观察机制，业务谓词宜避免副作用。",
+    "learn": [
+      "docs/07-linq.md"
+    ],
+    "sources": [
+      {
+        "title": "Introduction to LINQ Queries",
+        "url": "https://learn.microsoft.com/en-us/dotnet/csharp/linq/get-started/introduction-to-linq-queries"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "note": "运行检查两次枚举的谓词计数和结果；不推广为任意 LINQ 操作符都具有相同执行方式。",
+      "checks": [
+        "Q28"
+      ]
+    },
+    "explanation": {
+      "principle": "Enumerable.Where 构造按需筛选的序列，没有立即遍历源。每次枚举都会重新执行谓词并读取当轮的源内容。",
+      "steps": [
+        "创建 query 时 calls 为 0。第一次 Join 遍历 1、2、3，谓词被调用三次，输出 2。",
+        "两轮之间添加 4，第二次枚举检查四项，累计 calls 为 7，输出 2、4；查询本身不是先前结果的缓存。"
+      ],
+      "boundary": "这里在两轮完整枚举之间修改集合；在正在进行的 List 枚举中修改结构可能抛异常，是另一条边界。"
+    }
+  },
+  {
+    "id": "Q29",
+    "title": "ToList 与元素对象",
+    "kind": "single",
+    "tier": "core",
+    "topics": [
+      "物化",
+      "浅复制"
+    ],
+    "scenario": "",
+    "prompt": "调用 Q29() 返回什么？",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Execution.cs",
+        "region": "Q29"
+      }
+    ],
+    "options": {
+      "A": "(2, 1, \"updated\")",
+      "B": "(2, 2, \"updated\")",
+      "C": "(2, 1, \"initial\")",
+      "D": "(1, 1, \"updated\")"
+    },
+    "answers": [
+      "A"
+    ],
+    "rationale": {
+      "A": "ToList 创建独立列表并复制元素值；Row 是引用类型，因此原有元素仍指向同一对象。",
+      "B": "新列表不会随源列表的 Add 自动增加成员。",
+      "C": "ToList 不负责克隆 Row 对象，属性修改对共享引用可见。",
+      "D": "向 rows 添加元素只改变源列表成员数，其 Count 为 2。"
+    },
+    "takeaway": "物化解决重新枚举与成员序列变化，不自动提供深复制或线程安全的对象快照。",
+    "learn": [
+      "docs/07-linq.md",
+      "docs/03-modeling.md"
+    ],
+    "sources": [
+      {
+        "title": "Enumerable.ToList",
+        "url": "https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.tolist?view=net-10.0"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "note": "运行检查两个列表的成员数和共享元素属性；结论限定为本题引用类型 Row。",
+      "checks": [
+        "Q29"
+      ]
+    },
+    "explanation": {
+      "principle": "ToList 立即枚举并创建新列表，固定这次取得的元素序列。元素若为引用类型，复制的是引用，而不是元素对象。",
+      "steps": [
+        "源列表后来增加一行，不会同步增加 snapshot 的槽位，因此源有 2 项、快照有 1 项。",
+        "两份列表的第一项仍引用同一 Row，修改其 Name 后，snapshot[0] 也读到 updated。"
+      ],
+      "boundary": "物化可避免重枚举，却不自动提供对象内容隔离或并发安全；深快照还需设计成员复制。"
+    }
+  },
+  {
+    "id": "Q30",
+    "title": "IQueryable 的表达式在哪里执行",
+    "kind": "single",
+    "tier": "deep",
+    "topics": [
+      "IQueryable",
+      "表达式树",
+      "提供方"
+    ],
+    "scenario": "数据库查询中的自定义 Normalize 方法不受提供方支持，团队准备把这一项筛选移到本地。",
+    "prompt": "上游 IQueryable 查询受提供方支持。将含 Normalize 的筛选改为对 AsEnumerable() 的结果调用标准 Enumerable.Where 后，这一筛选会怎样执行？",
+    "code": [],
+    "options": {
+      "A": "AsEnumerable 调用时立即完成筛选，并把结果缓存供后续重复使用。",
+      "B": "AsEnumerable 让提供方自动将 Normalize 翻译为数据库查询。",
+      "C": "Enumerable.Where 仍把谓词加入上游表达式树，交由原提供方执行。",
+      "D": "枚举时消费上游查询结果，并在本地调用 Normalize 执行筛选。"
+    },
+    "answers": [
+      "D"
+    ],
+    "rationale": {
+      "A": "AsEnumerable 不枚举或缓存输入；Enumerable.Where 也采用延迟执行。",
+      "B": "改变后续操作符的绑定不会扩展提供方的翻译能力，语言层面的合法调用不保证可翻译。",
+      "C": "这里明确调用 Enumerable.Where，它接收本地委托，不再用 Queryable.Where 构建该筛选的表达式树。",
+      "D": "AsEnumerable 保留上游序列并以 IEnumerable 暴露；本地 Where 在枚举时处理提供方返回的数据，可能增加传输量。"
+    },
+    "takeaway": "查询正确性和成本要同时检查语言语义、操作符绑定、提供方翻译和实际执行计划。",
+    "learn": [
+      "docs/07-linq.md",
+      "docs/12-runtime.md"
+    ],
+    "sources": [
+      {
+        "title": "IQueryable<T>",
+        "url": "https://learn.microsoft.com/en-us/dotnet/api/system.linq.iqueryable-1?view=net-10.0"
+      },
+      {
+        "title": "Enumerable.AsEnumerable",
+        "url": "https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.asenumerable?view=net-10.0"
+      },
+      {
+        "title": "Enumerable.Where",
+        "url": "https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.where?view=net-10.0"
+      }
+    ],
+    "verification": {
+      "kind": "documentation",
+      "note": "人工核对 IQueryable、AsEnumerable 与 Enumerable.Where 契约；限定上游查询受支持，不用本地实验推断任意数据库提供方的翻译范围。"
+    },
+    "explanation": {
+      "principle": "IQueryable 的算子通常形成供提供方处理的表达式；AsEnumerable 改变后续标准算子的绑定入口，不立即下载或物化全部数据。",
+      "steps": [
+        "题设上游查询仍交给提供方执行；后续 Where 因接收 IEnumerable 而绑定到 Enumerable，不要求提供方翻译 Normalize。",
+        "枚举时先取得上游结果，再在本地调用 Normalize 筛选，因此可能传输更多尚未筛掉的数据。"
+      ],
+      "boundary": "其他查询提供方或上游表达式仍可能有限制；本地筛选的位置与数据量要按具体管线分析。"
+    }
+  },
+  {
+    "id": "Q31",
+    "title": "迭代器的参数校验时机",
+    "kind": "single",
+    "tier": "core",
+    "topics": [
+      "迭代器",
+      "参数验证",
+      "状态机"
+    ],
+    "scenario": "",
+    "prompt": "Q31() 的日志是什么？如需调用 RepeatPositive 时立即报参数错误，应如何组织实现？",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Execution.cs",
+        "region": "Q31"
+      }
+    ],
+    "options": {
+      "A": "argument；参数检查写在 yield 前面就立即执行。",
+      "B": "created,enumerator,argument；用不含 yield 的外层方法校验，再返回局部迭代器。",
+      "C": "created,argument；GetEnumerator 必须运行整个迭代器。",
+      "D": "created,enumerator；yield 会让参数异常被永久吞掉。"
+    },
+    "answers": [
+      "B"
+    ],
+    "rationale": {
+      "A": "迭代器方法体整体延迟到推进枚举，不只延迟 yield 后的语句。",
+      "B": "第一次 MoveNext 才进入方法体；普通外层方法可在返回迭代器之前先做校验。",
+      "C": "获得枚举器并不推进到方法体中的参数判断。",
+      "D": "异常会在推进时传播，未被吞掉。"
+    },
+    "takeaway": "明确 API 的失败时机：用普通外层方法做立即校验，用局部迭代器保留按需生成。",
+    "learn": [
+      "docs/14-execution-model.md",
+      "docs/07-linq.md"
+    ],
+    "sources": [
+      {
+        "title": "Local functions and exceptions",
+        "url": "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/local-functions"
+      },
+      {
+        "title": "yield statement",
+        "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/yield"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "note": "运行记录创建序列、获取枚举器和首次 MoveNext 的异常边界；额外验证普通外层校验在调用时抛出，合法输入仍返回正确序列。",
+      "checks": [
+        "Q31"
+      ]
+    },
+    "explanation": {
+      "principle": "含 yield 的迭代器方法把方法体执行交给枚举推进。返回 IEnumerable 并不意味着已执行参数检查或生成第一个元素。",
+      "steps": [
+        "RepeatPositive(0) 先返回序列，再获取枚举器，所以日志已有 created、enumerator；首次 MoveNext 才进入方法体并抛参数异常。",
+        "不含 yield 的外层普通方法可立即检查 count，检查成功后再返回局部迭代器，将立即失败和延迟生成分开。"
+      ],
+      "boundary": "API 文档应说明失败是在调用、获取枚举器还是推进时出现，不能假定所有返回序列的方法都有同一时机。"
+    }
+  },
+  {
+    "id": "Q32",
+    "title": "提前停止枚举是否关闭资源",
+    "kind": "single",
+    "tier": "core",
+    "topics": [
+      "迭代器",
+      "foreach",
+      "Dispose"
+    ],
+    "scenario": "",
+    "prompt": "Q32() 返回什么？",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Execution.cs",
+        "region": "Q32"
+      }
+    ],
+    "options": {
+      "A": "open,dispose,1,after",
+      "B": "open,1,after,dispose",
+      "C": "open,1,after",
+      "D": "open,1,dispose,after"
+    },
+    "answers": [
+      "D"
+    ],
+    "rationale": {
+      "A": "yield 暂停迭代器时仍保留资源，不会在交付首个元素前关闭。",
+      "B": "foreach 的退出路径先释放枚举器，再执行循环之后的代码。",
+      "C": "foreach 的 break 会处置此枚举器，从而执行迭代器中的清理。",
+      "D": "枚举器被 Dispose 后执行内部 using 的释放，然后进入 after。"
+    },
+    "takeaway": "foreach 帮助管理枚举器生命周期；手动 GetEnumerator 后若不 Dispose，不能期待相同的确定性清理。",
+    "learn": [
+      "docs/14-execution-model.md",
+      "docs/04-resources.md"
+    ],
+    "sources": [
+      {
+        "title": "yield statement",
+        "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/yield"
+      },
+      {
+        "title": "using statement",
+        "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/using"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "note": "运行验证首次 yield 后 break 的清理日志；未等待 GC，也不承诺丢弃未释放枚举器会立即关闭资源。",
+      "checks": [
+        "Q32"
+      ]
+    },
+    "explanation": {
+      "principle": "迭代器暂停时仍保留作用域中的资源；消费方释放枚举器时，会执行迭代器尚未结束的 finally／using 清理。",
+      "steps": [
+        "首次推进记录 open 并产生 1，循环体记录 1；break 提前退出 foreach，foreach 随即释放枚举器。",
+        "迭代器内部 Cursor.Dispose 记录 dispose，之后外层才记录 after，所以不会产生第二个元素。"
+      ],
+      "boundary": "手动拿到枚举器后也要履行释放责任；仅丢弃枚举器不能保证相同的及时清理。"
+    }
+  },
+  {
+    "id": "Q33",
+    "title": "async 方法的执行顺序",
+    "kind": "single",
+    "tier": "core",
+    "topics": [
+      "async",
+      "await",
+      "状态机"
+    ],
+    "scenario": "",
+    "prompt": "Q33() 的日志顺序是什么？gate 在 WorkAsync 被调用时尚未完成。",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Execution.cs",
+        "region": "Q33"
+      }
+    ],
+    "options": {
+      "A": "caller,A,B,C",
+      "B": "A,caller,B,C",
+      "C": "A,B,caller,C",
+      "D": "A,B,C,caller"
+    },
+    "answers": [
+      "C"
+    ],
+    "rationale": {
+      "A": "WorkAsync 的同步前缀在调用时执行，不会因为 async 自动排队到后台。",
+      "B": "等待已完成的 Task 不会挂起；B 仍在交还控制权之前执行。",
+      "C": "先同步执行 A、已完成 await 和 B；等待未完成 gate 时挂起，调用方继续，之后再恢复 C。",
+      "D": "gate 要由调用方在记录 caller 后完成，因此 C 不会提前出现。"
+    },
+    "takeaway": "编译器把跨挂起点需要保留的状态组织成状态机；遇到未完成 await 才保存进度并返回，完成后恢复。此模型不等于每次 await 换线程，也不保证生成字段布局。",
+    "learn": [
+      "docs/08-async.md",
+      "docs/14-execution-model.md"
+    ],
+    "sources": [
+      {
+        "title": "await operator",
+        "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/await"
+      },
+      {
+        "title": "Async return types",
+        "url": "https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/async-return-types"
+      },
+      {
+        "title": "Asynchronous programming and state machines",
+        "url": "https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "note": "用 TaskCompletionSource 控制挂起点并检查可观测顺序，不以线程编号或一次调度结果推断语言保证。",
+      "checks": [
+        "Q33"
+      ]
+    },
+    "explanation": {
+      "principle": "普通 async Task 方法调用后先同步执行，await 的操作若已完成就继续。只有遇到尚未完成的等待，才需要保存进度并返回调用方。",
+      "steps": [
+        "WorkAsync 立即记录 A；CompletedTask 已完成，因此不挂起并继续记录 B，随后在未完成 gate 处暂停。",
+        "调用方此时记录 caller，再完成 gate；WorkAsync 恢复后记录 C，等待 work 保证最终返回完整日志。"
+      ],
+      "boundary": "await 不等于换线程；具体恢复位置取决于等待状态和调度上下文，不应从日志推导固定线程身份。"
+    }
+  },
+  {
+    "id": "Q34",
+    "title": "WhenAll 的故障完成与异常观察",
+    "kind": "single",
+    "tier": "core",
+    "topics": [
+      "WhenAll",
+      "异常聚合"
+    ],
+    "scenario": "并发批次中的两个操作都失败，故障报告必须包含两项错误，而不只记录 await 抛出的那一项。",
+    "prompt": "若要在 Q34 的 catch 中取得两个操作的全部原始异常，应采用哪种做法？不依赖 await 选择哪一个异常。",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Execution.cs",
+        "region": "Q34"
+      }
+    ],
+    "options": {
+      "A": "读取 all.Exception!.InnerExceptions。",
+      "B": "将 catch 捕获的 error 强制转换为 AggregateException，再读取 InnerExceptions。",
+      "C": "再 await all 一次，收集这次抛出的另一个异常。",
+      "D": "只读取 second.Task.Exception!.InnerExceptions。"
+    },
+    "answers": [
+      "A"
+    ],
+    "rationale": {
+      "A": "all 等待两个任务终态，并在 Exception 中聚合两个故障；读取该集合可得到完整错误。",
+      "B": "本题 await 传播的是两个原始异常之一，两者都不是 AggregateException，强制转换会失败。",
+      "C": "重复 await 不会逐个取走异常，也不保证下一次改抛另一个错误；应检查组合任务保存的集合。",
+      "D": "second.Task 的异常集合只有 secondError，不包含另一个任务的 firstError。"
+    },
+    "takeaway": "保留组合 Task，在 catch 中检查其 Exception 获得全部故障；需要遇错取消时另行设计合作取消和清理。",
+    "learn": [
+      "docs/08-async.md"
+    ],
+    "sources": [
+      {
+        "title": "Task.WhenAll",
+        "url": "https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task.whenall?view=net-10.0"
+      },
+      {
+        "title": "Async return types",
+        "url": "https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/async-return-types"
+      },
+      {
+        "title": "Consuming the Task-based Asynchronous Pattern",
+        "url": "https://learn.microsoft.com/en-us/dotnet/standard/asynchronous-programming-patterns/consuming-the-task-based-asynchronous-pattern"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "note": "受控完成第二个失败任务，检查完成边界、故障数和 await 异常身份；另检查组合任务确实保留两个原始异常，不断言 await 的选择顺序。",
+      "checks": [
+        "Q34"
+      ]
+    },
+    "explanation": {
+      "principle": "WhenAll 表示所有输入任务都达到终态。组合 Task 保存全部故障，而一次 await 的异常传播不等同于逐一抛出整个故障集合。",
+      "steps": [
+        "first 已失败，但 second 未完成，所以 all 仍未完成；second 也失败后，all 才以故障状态结束。",
+        "catch 中保留 all 并读取 Exception.InnerExceptions，才能取得两个原始异常；不能只检查 await 暴露的那一个异常。"
+      ],
+      "boundary": "WhenAll 不自动遇错停止其他任务；若需取消剩余工作，要另行传递取消并等待其清理。"
+    }
+  },
+  {
+    "id": "Q35",
+    "title": "取消请求与清理完成",
+    "kind": "single",
+    "tier": "core",
+    "topics": [
+      "合作取消",
+      "异步清理"
+    ],
+    "scenario": "宿主请求取消导出后，要确认导出任务的 finally 已执行完，才能宣布该操作停止。",
+    "prompt": "Q35 用信号分别控制观察取消、进入清理和完成清理。哪个观察结果足以确认 WorkAsync 的 finally 已经结束？",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Execution.cs",
+        "region": "Q35"
+      }
+    ],
+    "options": {
+      "A": "cts.Cancel() 已返回。",
+      "B": "await cleaning.Task 已结束。",
+      "C": "await work 已抛出并由外层 catch 观察到 OperationCanceledException。",
+      "D": "finish.SetResult() 已返回。"
+    },
+    "answers": [
+      "C"
+    ],
+    "rationale": {
+      "A": "Cancel 发出取消请求；本题 work 此时仍在等待 observe，afterCancel 为 true。",
+      "B": "cleaning 在 finally 开头完成，随后仍等待 finish，duringCleanup 为 true。",
+      "C": "本题 finally 正常完成后，work 才以取消状态结束；await 观察取消时 cleaned 已为 true。",
+      "D": "完成 finish 只允许清理继续执行，不保证 cleaned 的赋值在 SetResult 返回前已经发生。"
+    },
+    "takeaway": "取消是协议：传递 token、观察取消、执行清理、等待终态。关闭流程必须拥有已启动任务的集合。",
+    "learn": [
+      "docs/08-async.md",
+      "docs/04-resources.md"
+    ],
+    "sources": [
+      {
+        "title": "Cancellation in Managed Threads",
+        "url": "https://learn.microsoft.com/en-us/dotnet/standard/threading/cancellation-in-managed-threads"
+      },
+      {
+        "title": "await operator",
+        "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/await"
+      },
+      {
+        "title": "CancellationTokenSource.Dispose",
+        "url": "https://learn.microsoft.com/en-us/dotnet/api/system.threading.cancellationtokensource.dispose?view=net-10.0"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "note": "两组完成信号分别控制取消观察与 finally 退出，验证取消后仍未完成、最终清理和 Task 的 Canceled 状态；无 sleep 或调度时间假设。",
+      "checks": [
+        "Q35"
+      ]
+    },
+    "explanation": {
+      "principle": "取消请求、任务观察取消、清理结束和任务终态是不同阶段。任务包含其 finally 的执行，等待终态才能建立完成屏障。",
+      "steps": [
+        "Cancel 只发出请求，工作仍等 observe；观察取消后进入 finally，但又等待 finish，此时 work 仍未完成。",
+        "finish 完成使 cleaned 变为 true，随后 work 才以取消结束；外层 await 观察到取消时，finally 已正常结束。"
+      ],
+      "boundary": "这个确认依赖题设的 finally 正常完成；不能把任意取消异常或一个清理开始信号当作所有资源都已成功释放。"
+    }
+  },
+  {
+    "id": "Q36",
+    "title": "任务查询的重复枚举",
+    "kind": "single",
+    "tier": "core",
+    "topics": [
+      "LINQ",
+      "任务启动",
+      "物化"
+    ],
+    "scenario": "",
+    "prompt": "Q36() 返回什么？怎样才能让两次 WhenAll 等待同一批任务？",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Execution.cs",
+        "region": "Q36"
+      }
+    ],
+    "options": {
+      "A": "(0, 3, 3)；IEnumerable<Task<int>> 自动缓存已创建的 Task。",
+      "B": "(0, 3, 6)；把 Select 的结果 ToArray 一次，再重复使用该数组。",
+      "C": "(3, 3, 3)；Select 声明时就已调用全部 FetchAsync。",
+      "D": "(0, 0, 0)；Task.FromResult 不算调用 FetchAsync。"
+    },
+    "answers": [
+      "B"
+    ],
+    "rationale": {
+      "A": "缓存的是查询描述，不是每次执行选择器所创建的 Task。",
+      "B": "每次 WhenAll 枚举 requests 都调用三次工厂；物化一次保存 Task 身份。",
+      "C": "Select 延迟执行，声明查询时不会调用工厂。",
+      "D": "任务可以同步完成，但调用工厂和 starts 自增仍然发生。"
+    },
+    "takeaway": "区分异步操作的工厂和已启动的 Task；需要复用操作时物化任务集合，而非反复枚举工厂查询。",
+    "learn": [
+      "docs/07-linq.md",
+      "docs/08-async.md"
+    ],
+    "sources": [
+      {
+        "title": "Introduction to LINQ Queries",
+        "url": "https://learn.microsoft.com/en-us/dotnet/csharp/linq/get-started/introduction-to-linq-queries"
+      },
+      {
+        "title": "Task.WhenAll",
+        "url": "https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task.whenall?view=net-10.0"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "note": "运行检查两次 WhenAll 前后的工厂调用数，并额外验证 ToArray 一次后重复等待仍只调用三次；同步完成的任务无网络或计时依赖。",
+      "checks": [
+        "Q36"
+      ]
+    },
+    "explanation": {
+      "principle": "Select 保存的是转换逻辑；若转换会创建或启动任务，每次枚举都会再次调用任务工厂。Task 则是某一次操作的完成句柄。",
+      "steps": [
+        "建立 requests 时 starts 为 0；第一次 WhenAll 枚举三个 ID，调用三次 FetchAsync。",
+        "第二次 WhenAll 重新枚举同一查询，再调用三次，累计为 6；ToArray 一次则保存那一批 Task，后续可复用其身份。"
+      ],
+      "boundary": "复用已启动任务和再次执行业务操作是不同需求；不要只凭 IEnumerable<Task> 的类型认定操作已经固定。"
+    }
+  },
+  {
+    "id": "Q37",
+    "title": "async void 应放在哪个边界",
+    "kind": "single",
+    "tier": "core",
+    "topics": [
+      "async void",
+      "异常观察"
+    ],
+    "scenario": "异步保存操作没有业务返回值，同时被按钮事件和批处理调用；两种调用方都要观察保存失败。",
+    "prompt": "框架的按钮事件委托必须返回 void，批处理需要 await 完整保存过程。哪种 API 设计符合这两个边界？",
+    "code": [],
+    "options": {
+      "A": "保存逻辑使用 async void，由每个调用点的外层 try/catch 捕获异步失败。",
+      "B": "保存逻辑返回表示完整操作的 Task；void 事件处理器 await 它并在处理器内处理失败。",
+      "C": "保存逻辑返回 Task，但启动实际异步写入后就返回 Task.CompletedTask。",
+      "D": "保存逻辑使用 async void，批处理用 Task.Run(() => SaveAsync()) 等待保存完成。"
+    },
+    "answers": [
+      "B"
+    ],
+    "rationale": {
+      "A": "调用点的 catch 不能观察 async void 在挂起恢复后的失败，而且批处理没有可等待的操作句柄。",
+      "B": "Task 表示保存的完成、失败或取消；必须返回 void 的事件边界可使用 async void，并在内部 await 和处理异常。",
+      "C": "提前返回已完成 Task 会把实际写入排除在完成与失败契约外，批处理可能在保存结束前继续。",
+      "D": "这个 Task.Run 包装的是 Action；async void 在首次挂起时就可从调用返回，外层 Task 不代表完整保存。"
+    },
+    "takeaway": "无返回数据和无需等待是不同需求；把 async void 限定在确实要求 void 的框架边界。",
+    "learn": [
+      "docs/08-async.md",
+      "docs/06-delegates.md"
+    ],
+    "sources": [
+      {
+        "title": "Async return types",
+        "url": "https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/async-return-types"
+      },
+      {
+        "title": "Task.Run(Action)",
+        "url": "https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.task.run?view=net-10.0#system-threading-tasks-task-run(system-action)"
+      }
+    ],
+    "verification": {
+      "kind": "documentation",
+      "note": "人工核对 async void 和 Task 的异常/等待契约；不在验证进程中制造可能终止进程的未处理 async void 异常。"
+    },
+    "explanation": {
+      "principle": "Task 可以表示整个异步操作的成功、失败或取消；async void 没有可供调用方等待的完成句柄。无结果数据不等于无需等待。",
+      "steps": [
+        "批处理需要等保存结束，保存逻辑必须返回完整操作的 Task；这样组合流程才能等待并处理故障。",
+        "框架事件要求 void 时，可在 async void 边界内 await 保存 Task，并在该处理器内捕获无法通过返回值交给调用方的异常。"
+      ],
+      "boundary": "把 async void 留在确实要求 void 的回调边界；普通库 API 宜暴露可等待的完成语义。"
+    }
+  },
+  {
+    "id": "Q38",
+    "title": "ConfigureAwait(false) 的精确边界",
+    "kind": "single",
+    "tier": "deep",
+    "topics": [
+      "SynchronizationContext",
+      "ConfigureAwait",
+      "ExecutionContext"
+    ],
+    "scenario": "",
+    "prompt": "对普通 Task，await task.ConfigureAwait(false) 相比 await task，改变的是哪项行为？",
+    "code": [],
+    "options": {
+      "A": "清除当前 ExecutionContext，使后续代码看不到原来的 AsyncLocal 值。",
+      "B": "强制本次 await 挂起，并把后续代码切换到另一个线程池线程。",
+      "C": "让调用方在等待这个方法返回的 Task 时，也不能捕获调用方自己的上下文。",
+      "D": "本次等待挂起时，不要求将后续代码调度回原 SynchronizationContext 或非默认 TaskScheduler。"
+    },
+    "answers": [
+      "D"
+    ],
+    "rationale": {
+      "A": "ExecutionContext 与 SynchronizationContext 不同；false 不等于 SuppressFlow，AsyncLocal 仍可跨 await 流动。",
+      "B": "false 不强制换线程；如果 task 已完成，await 可以在当前线程同步继续。",
+      "C": "配置仅作用于这个 await，调用方自己的等待仍按调用方的捕获与调度规则执行。",
+      "D": "false 取消这次等待对原调度上下文的恢复要求，但不承诺一个具体线程或后续全部等待的行为。"
+    },
+    "takeaway": "分清线程、SynchronizationContext/TaskScheduler 与 ExecutionContext；不要靠 ConfigureAwait(false) 做隔离或后台执行。",
+    "learn": [
+      "docs/08-async.md",
+      "docs/14-execution-model.md"
+    ],
+    "sources": [
+      {
+        "title": "ConfigureAwait FAQ",
+        "url": "https://devblogs.microsoft.com/dotnet/configureawait-faq/"
+      },
+      {
+        "title": "await operator",
+        "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/await"
+      }
+    ],
+    "verification": {
+      "kind": "documentation",
+      "note": "人工核对官方 ConfigureAwait FAQ 的已完成任务与 ExecutionContext 边界；具体 UI 框架和调度器行为未由本地控制台实验代替验证。"
+    },
+    "explanation": {
+      "principle": "ConfigureAwait(false) 控制这一次 await 在挂起后是否要求回到捕获的调度上下文。它不是指定线程、清除所有上下文或开启后台工作的命令。",
+      "steps": [
+        "如果等待未完成，false 使后续代码不要求回到原 SynchronizationContext 或非默认 TaskScheduler。",
+        "若任务已经完成，代码可直接继续；即使挂起，也不能据此断言会使用某个固定线程或影响下一次独立 await。"
+      ],
+      "boundary": "ExecutionContext 等环境数据的流动是另一层机制；需要 UI 线程访问时仍应显式维护正确边界。"
+    }
+  },
+  {
+    "id": "Q39",
+    "title": "ValueTask 的共享消费",
+    "kind": "single",
+    "tier": "deep",
+    "topics": [
+      "ValueTask",
+      "消费契约",
+      "性能取舍"
+    ],
+    "scenario": "API 返回一个 ValueTask<int>，两个消费者需要等待同一次调用的结果，不能再启动一次操作。",
+    "prompt": "该 ValueTask 尚未被消费，API 也未额外承诺可重复消费。以下哪种共享方式符合通用消费契约？",
+    "code": [],
+    "options": {
+      "A": "调用一次 AsTask，保存并共享返回的 Task，之后不再消费原 ValueTask。",
+      "B": "把 ValueTask 复制到两个变量，让两个消费者各 await 一份。",
+      "C": "让两个消费者各自对原 ValueTask 调用 AsTask，再等待各自取得的 Task。",
+      "D": "第一个消费者 await 原 ValueTask 完成后，再让第二个消费者 await 同一值。"
+    },
+    "answers": [
+      "A"
+    ],
+    "rationale": {
+      "A": "一次转换后按 Task 的规则共享同一完成句柄；不要再 await 原值或对它重复 AsTask。",
+      "B": "结构复制不克隆底层操作或消费权限，两份值可能仍指向同一 IValueTaskSource 与版本 token。",
+      "C": "通用契约禁止多次 AsTask；当前实现碰巧可行也不能作为库调用方的依据。",
+      "D": "按先后顺序消费仍然是重复消费，已完成不意味着该 ValueTask 获得可重用保证。"
+    },
+    "takeaway": "ValueTask 是带消费约束的性能工具，不能只凭值类型外观推断所有权或可复用性。",
+    "learn": [
+      "docs/08-async.md",
+      "docs/10-performance.md"
+    ],
+    "sources": [
+      {
+        "title": "ValueTask<TResult>",
+        "url": "https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.valuetask-1?view=net-10.0"
+      }
+    ],
+    "verification": {
+      "kind": "documentation",
+      "note": "人工核对 ValueTask 文档明确禁止的多次消费及混合消费；不运行未定义用法并将碰巧成功当作保证。"
+    },
+    "explanation": {
+      "principle": "ValueTask<T> 可能包装结果、Task 或有单次消费约束的源。通用调用方不能因为它是值类型，就复制后随意重复等待。",
+      "steps": [
+        "题设没有额外的重复消费承诺，因此多处直接 await 同一个值或重复 AsTask 都不属于可依赖的通用用法。",
+        "只转换一次并保存所得 Task，再共享该 Task，使用的是 Task 的可重复观察完成语义；原 ValueTask 不再消费。"
+      ],
+      "boundary": "是否适合返回 ValueTask 是基于具体成本的 API 决策，不能只依据“值类型比 class 快”的概括。"
+    }
+  },
+  {
+    "id": "Q40",
+    "title": "异步流的取消传递与清理",
+    "kind": "single",
+    "tier": "deep",
+    "topics": [
+      "IAsyncEnumerable",
+      "EnumeratorCancellation",
+      "合作取消"
+    ],
+    "scenario": "",
+    "prompt": "Q40() 最终返回哪段日志？这里 ReadAsync 使用所示 EnumeratorCancellation 参数，并在每次循环检查 token。",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Execution.cs",
+        "region": "Q40"
+      }
+    ],
+    "options": {
+      "A": "1,canceled,disposed",
+      "B": "1,disposed,canceled",
+      "C": "1,2,3,disposed",
+      "D": "1,canceled"
+    },
+    "answers": [
+      "B"
+    ],
+    "rationale": {
+      "A": "异常离开迭代器前先经过其中的 finally，消费者的 catch 不会先于该清理执行。",
+      "B": "枚举 token 经参数特性进入生产者；第二次推进时抛出取消异常，先记录 disposed，再进入外层 catch。",
+      "C": "虽然 ReadAsync 调用未显式传 token，WithCancellation 与参数特性会把枚举 token 传入，因此不会继续产出第二、三项。",
+      "D": "取消不会绕过 finally；WithCancellation 也不提供强制打断用户代码的抢占机制。"
+    },
+    "takeaway": "异步流取消由枚举协议、参数标记和生产者的合作组成；await foreach 同时承担枚举器的异步释放。",
+    "learn": [
+      "docs/08-async.md",
+      "docs/14-execution-model.md"
+    ],
+    "sources": [
+      {
+        "title": "Generate and consume async streams",
+        "url": "https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/generate-consume-asynchronous-stream"
+      },
+      {
+        "title": "EnumeratorCancellationAttribute",
+        "url": "https://learn.microsoft.com/en-us/dotnet/api/system.runtime.compilerservices.enumeratorcancellationattribute?view=net-10.0"
+      },
+      {
+        "title": "yield statement",
+        "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/yield"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "note": "运行验证枚举 token 的传播、第二次推进取消与 finally 顺序；不把 WithCancellation 描述为强制打断任意用户代码。",
+      "checks": [
+        "Q40"
+      ]
+    },
+    "explanation": {
+      "principle": "WithCancellation 给异步枚举协议提供 token；EnumeratorCancellation 把枚举 token 接入生成器参数，生产者还需合作检查。",
+      "steps": [
+        "第一次推进产生 1，消费方记录后取消；下一次推进调用 ThrowIfCancellationRequested，抛出取消异常。",
+        "生产者先执行 finally 记录 disposed，再由外层 catch 记录 canceled，故日志为 1、disposed、canceled。"
+      ],
+      "boundary": "取消不是强制终止任意生成器；缺少传递、参数接入或合作检查时，不能假定 WithCancellation 自动停止业务代码。"
+    }
+  }
+]

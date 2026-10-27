@@ -1,0 +1,114 @@
+{
+  "group": "runtime",
+  "title": "运行时与性能讲解",
+  "intro": "这 14 题将性能判断落实到复制、分配、借用期、对象保留与同步协议。先保证语义和所有权，再使用范围匹配的指标判断成本。",
+  "sections": [
+    {
+      "title": "值存储、装箱和防御性复制",
+      "questions": [
+        "Q41",
+        "Q42",
+        "Q43",
+        "Q60"
+      ],
+      "code": [
+        {
+          "path": "tests/Quiz.Checks/Runtime.cs",
+          "region": "Q42-types"
+        },
+        {
+          "path": "tests/Quiz.Checks/Runtime.cs",
+          "region": "Q42-call"
+        }
+      ],
+      "result": "BoxingSnapshot() 返回 (9, 3, 7)：原变量、箱内值与普通解箱所得变量是独立的值。",
+      "explanation": [
+        "struct 是值语义，不等于总在栈上，也不等于不参与托管对象图。数组可内联保存值元素，值内的引用字段仍指向托管对象。",
+        "接口转换可能先装箱；受约束泛型调用与 ref 写回是另外两项决定。in 参数调用非只读成员时可能产生防御性副本，修改副本不会修改原变量。"
+      ],
+      "takeaway": "区分修改落到哪份值、是否创建对象以及实际复制成本；不要把接口、泛型或 in 当作无条件零分配保证。"
+    },
+    {
+      "title": "视图、租约、存活与地址稳定",
+      "questions": [
+        "Q44",
+        "Q45",
+        "Q46",
+        "Q49"
+      ],
+      "code": [
+        {
+          "path": "tests/Quiz.Checks/Runtime.cs",
+          "region": "Q44"
+        }
+      ],
+      "result": "SharedViews() 返回 (99, 7)：只读视图仍会观察其他别名对同一后备数组的修改。",
+      "explanation": [
+        "Span 切片共享存储，ReadOnlySpan 只限制通过该视图写入。跨异步挂起需要可保存的 Memory 或数组，并在恢复后建立短期视图。",
+        "池化缓冲区必须等消费者终结后才归还；取消请求、强引用和只读接口都不能代替租约。KeepAlive 管存活，fixed 管作用域内的地址稳定，原生访问期还需契约限定。"
+      ],
+      "takeaway": "每个借用都写清开始、结束与归还责任；对象活着并不代表缓冲区仍归你使用。"
+    },
+    {
+      "title": "分配压力与对象保留是不同问题",
+      "questions": [
+        "Q47",
+        "Q51"
+      ],
+      "code": [
+        {
+          "path": "tests/Quiz.Checks/Runtime.cs",
+          "region": "Q51"
+        }
+      ],
+      "result": "预热后 MeasureAllocation() 得到正的当前线程托管分配增量；数值不是存活字节或泄漏字节。",
+      "explanation": [
+        "GC 根据从根可达的对象图判断存活。业务已结束、局部变量置空或调用 GC.Collect，都不能移除静态缓存和事件中的其他保留路径。",
+        "当前线程累计分配计数不会因回收而扣减，也不统计其他线程或原生分配。测量窗口、线程范围和指标含义都要与问题一致。"
+      ],
+      "takeaway": "排查保留先找引用链，优化分配先测分配路径；不要把一次分配增量当成泄漏证据。"
+    },
+    {
+      "title": "泛型类型身份与机器码策略分开",
+      "questions": [
+        "Q52"
+      ],
+      "code": [
+        {
+          "path": "tests/Quiz.Checks/Runtime.cs",
+          "region": "Q52-types"
+        },
+        {
+          "path": "tests/Quiz.Checks/Runtime.cs",
+          "region": "Q52-call"
+        }
+      ],
+      "result": "GenericState() 返回 (7, 0, false)：不同封闭泛型类型的静态状态和类型身份仍独立。",
+      "explanation": [
+        "运行时可能共享某些机器码，但闭合泛型类型仍保留具体类型实参；共享实现不等于抹掉类型身份。",
+        "为一个封闭类型设置静态字段，不会给另一个封闭类型的字段赋值。不能从静态状态实验反推具体机器码共享布局。"
+      ],
+      "takeaway": "泛型缓存的存储范围按封闭类型设计，运行时优化策略另用对应工具验证。"
+    },
+    {
+      "title": "原子操作不自动组成业务事务",
+      "questions": [
+        "Q56",
+        "Q57",
+        "Q58"
+      ],
+      "code": [
+        {
+          "path": "tests/Quiz.Checks/Runtime.cs",
+          "region": "Q56"
+        }
+      ],
+      "result": "代码中的 VolatileCounter.Increment 使用读改写，不能保证并发更新不丢失；改用 Interlocked.Increment 才提供单次原子递增。",
+      "explanation": [
+        "多个线程的读改写可能交错；单次原子递增解决单字段更新，但两次原子写仍可能暴露多字段之间的中间状态。",
+        "跨字段不变量需要所有相关读写遵循同一同步协议。ConcurrentDictionary 的原子插入不保证工厂只执行一次，失败候选也可能已产生外部副作用。"
+      ],
+      "takeaway": "先写业务不变量和副作用责任，再选锁、Interlocked 或并发容器；不要把容器线程安全推广成完整工作流安全。"
+    }
+  ]
+}

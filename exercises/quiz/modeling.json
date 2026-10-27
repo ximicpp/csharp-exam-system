@@ -1,0 +1,1170 @@
+[
+  {
+    "id": "Q81",
+    "title": "构造函数体的先后",
+    "kind": "single",
+    "tier": "core",
+    "topics": [
+      "继承",
+      "构造"
+    ],
+    "scenario": "",
+    "prompt": "ConstructorOrder() 返回什么？只比较这里的构造函数体。",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Modeling.cs",
+        "region": "Q81"
+      }
+    ],
+    "options": {
+      "A": "\"base,derived\"",
+      "B": "\"derived,base\"",
+      "C": "\"base\"",
+      "D": "不能编译：构造函数不能传入列表"
+    },
+    "answers": [
+      "A"
+    ],
+    "rationale": {
+      "A": "base(trace) 的构造函数体先执行，再执行 Child 的函数体。",
+      "B": "不能由类型声明顺序推断调用顺序；基类函数体先执行。",
+      "C": "派生类函数体仍会执行，不会被 base 调用替代。",
+      "D": "构造函数可以接受引用类型实参。"
+    },
+    "takeaway": "把字段初始化与构造函数体顺序分开分析；基类构造阶段应避免依赖派生类已完成初始化。",
+    "learn": [
+      "docs/03-modeling.md"
+    ],
+    "sources": [
+      {
+        "title": "使用构造函数",
+        "url": "https://learn.microsoft.com/zh-cn/dotnet/csharp/programming-guide/classes-and-structs/using-constructors"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "checks": [
+        "Q81"
+      ],
+      "note": "断言给定样例的返回值或异常，并结合官方契约核对干扰项；不据此推广性能、跨平台 ABI 或其他输入。"
+    },
+    "explanation": {
+      "principle": "派生构造函数调用基类构造函数时，基类构造函数体先完成，随后才执行派生构造函数体。源码声明顺序不决定这条调用链。",
+      "steps": [
+        "创建 Child 时先进入 base(trace)，在同一列表添加 base。",
+        "随后执行 Child 的函数体添加 derived，因此日志是 base,derived。"
+      ],
+      "boundary": "这里只比较函数体；字段初始化等还有各自的顺序，不能把本题结论扩大成所有初始化步骤的统一顺序。"
+    }
+  },
+  {
+    "id": "Q82",
+    "title": "主构造函数参数与状态",
+    "kind": "single",
+    "tier": "core",
+    "topics": [
+      "主构造函数",
+      "状态"
+    ],
+    "scenario": "",
+    "prompt": "PrimaryState() 返回什么？",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Modeling.cs",
+        "region": "Q82"
+      }
+    ],
+    "options": {
+      "A": "(5, 5)",
+      "B": "(5, 6)",
+      "C": "不能编译：start 只能在构造阶段使用",
+      "D": "(6, 7)"
+    },
+    "answers": [
+      "B"
+    ],
+    "rationale": {
+      "A": "每次调用都会更新同一实例保留的参数状态。",
+      "B": "实例方法使用 start，因此它的状态被保留；后缀递增先返回旧值再更新。",
+      "C": "主构造函数参数在类型正文作用域内，可以被实例成员使用。",
+      "D": "后缀 ++ 的结果是递增前的值。"
+    },
+    "takeaway": "普通 class 的主构造函数不自动生成同名公开属性；明确选择可变状态或只读成员。",
+    "learn": [
+      "docs/03-modeling.md"
+    ],
+    "sources": [
+      {
+        "title": "主构造函数规则",
+        "url": "https://learn.microsoft.com/zh-cn/dotnet/csharp/whats-new/tutorials/primary-constructors"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "checks": [
+        "Q82"
+      ],
+      "note": "断言给定样例的返回值或异常，并结合官方契约核对干扰项；不据此推广性能、跨平台 ABI 或其他输入。"
+    },
+    "explanation": {
+      "principle": "普通 class 的主构造函数参数仍是参数，供实例成员使用时可被保留为实例状态；它不会自动变成同名公开属性或只读值。",
+      "steps": [
+        "Sequence(5) 建立 start 为 5 的实例状态，第一次后缀递增返回 5，再把状态改为 6。",
+        "第二次调用操作同一实例，返回 6 后再递增，最终返回值为 5、6。"
+      ],
+      "boundary": "若希望状态只读，应明确建立只读成员；record 的位置参数生成属性规则也不能直接套用到普通 class。"
+    }
+  },
+  {
+    "id": "Q83",
+    "title": "field 支持的属性校验",
+    "kind": "single",
+    "tier": "core",
+    "topics": [
+      "属性",
+      "C# 14 field"
+    ],
+    "scenario": "",
+    "prompt": "GuardProperty() 返回什么？",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Modeling.cs",
+        "region": "Q83"
+      }
+    ],
+    "options": {
+      "A": "(-1, true)",
+      "B": "(0, true)",
+      "C": "(3, true)",
+      "D": "不能编译：get 与自定义 set 不能共用 field"
+    },
+    "answers": [
+      "C"
+    ],
+    "rationale": {
+      "A": "异常分支没有把 -1 写入支持字段。",
+      "B": "失败写入不会自动重置先前的有效值。",
+      "C": "负值分支先抛出异常，没有完成赋值；生成的支持字段仍为 3。",
+      "D": "C# 14 支持用 field 引用编译器生成的属性存储。"
+    },
+    "takeaway": "setter 校验应在写入前建立不变量；支持字段语法不改变异常时的赋值规则。",
+    "learn": [
+      "docs/03-modeling.md"
+    ],
+    "sources": [
+      {
+        "title": "属性与 field",
+        "url": "https://learn.microsoft.com/zh-cn/dotnet/csharp/programming-guide/classes-and-structs/properties"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "checks": [
+        "Q83"
+      ],
+      "note": "断言给定样例的返回值或异常，并结合官方契约核对干扰项；不据此推广性能、跨平台 ABI 或其他输入。"
+    },
+    "explanation": {
+      "principle": "setter 是一次方法式操作，赋值只有在右侧成功计算后才完成。field 只是访问编译器提供的存储，并不改变异常规则。",
+      "steps": [
+        "对象初始化先把 Limit 设为 3；后续传入 -1，条件选择 throw 分支。",
+        "异常阻止 field 写入，catch 设置 rejected 为 true；Limit 保持 3，所以结果为 3、true。"
+      ],
+      "boundary": "有效性检查应放在写入前；复杂 setter 若先修改其他状态再抛异常，整体回滚并不会自动发生。"
+    }
+  },
+  {
+    "id": "Q84",
+    "title": "属性访问器的执行",
+    "kind": "single",
+    "tier": "core",
+    "topics": [
+      "属性",
+      "副作用"
+    ],
+    "scenario": "",
+    "prompt": "ReadProperty() 返回什么？",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Modeling.cs",
+        "region": "Q84"
+      }
+    ],
+    "options": {
+      "A": "(1, 1)",
+      "B": "(0, 0)",
+      "C": "不能编译：getter 不能修改对象",
+      "D": "(1, 2)"
+    },
+    "answers": [
+      "D"
+    ],
+    "rationale": {
+      "A": "属性没有自动缓存计算结果。",
+      "B": "访问器实际执行递增，不会只是读取默认值。",
+      "C": "普通类的 getter 可以执行代码并修改状态。",
+      "D": "表达式体 getter 每次访问都执行 ++reads。"
+    },
+    "takeaway": "需要稳定值时先读取到局部变量；避免让看似轻量的属性隐藏昂贵或意外副作用。",
+    "learn": [
+      "docs/03-modeling.md"
+    ],
+    "sources": [
+      {
+        "title": "属性访问器",
+        "url": "https://learn.microsoft.com/zh-cn/dotnet/csharp/programming-guide/classes-and-structs/properties"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "checks": [
+        "Q84"
+      ],
+      "note": "断言给定样例的返回值或异常，并结合官方契约核对干扰项；不据此推广性能、跨平台 ABI 或其他输入。"
+    },
+    "explanation": {
+      "principle": "属性访问会执行访问器代码，外观像读取字段却不承诺无副作用、缓存或每次相同结果。",
+      "steps": [
+        "第一次 reading.Value 执行 ++reads，把 0 改成 1 并返回 1。",
+        "第二次再次执行 getter，把 1 改成 2，因而得到 1、2。"
+      ],
+      "boundary": "需要一次读取的快照时保存到局部变量；公开属性通常应避免让这种副作用出乎调用者意料。"
+    }
+  },
+  {
+    "id": "Q85",
+    "title": "索引器封装存储",
+    "kind": "single",
+    "tier": "core",
+    "topics": [
+      "索引器",
+      "封装"
+    ],
+    "scenario": "",
+    "prompt": "IndexSlots() 返回什么？",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Modeling.cs",
+        "region": "Q85"
+      }
+    ],
+    "options": {
+      "A": "(20, 99)",
+      "B": "(20, 20)",
+      "C": "(10, 99)",
+      "D": "不能编译：只有数组能使用 []"
+    },
+    "answers": [
+      "A"
+    ],
+    "rationale": {
+      "A": "slots[1] 调用索引器访问器，set 修改 values[1]，再次 get 读到 99。",
+      "B": "set 将 99 写入后续 get 使用的同一数组。",
+      "C": "这里索引从零开始，索引 1 的初始值为 20。",
+      "D": "类或结构可以声明 this[...] 索引器。"
+    },
+    "takeaway": "索引器可验证索引、实现映射或返回引用；它本身不保证有数组存储。",
+    "learn": [
+      "docs/03-modeling.md"
+    ],
+    "sources": [
+      {
+        "title": "索引器",
+        "url": "https://learn.microsoft.com/zh-cn/dotnet/csharp/programming-guide/indexers/"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "checks": [
+        "Q85"
+      ],
+      "note": "断言给定样例的返回值或异常，并结合官方契约核对干扰项；不据此推广性能、跨平台 ABI 或其他输入。"
+    },
+    "explanation": {
+      "principle": "索引器把 [] 语法映射到 get/set 访问器；真正的存储、索引含义和校验都由访问器实现决定。",
+      "steps": [
+        "所示 get 返回 values[index]，索引 1 初始为 20，保存到 before。",
+        "set 把同一槽位改为 99，下一次 get 读到 99，结果为 20、99。"
+      ],
+      "boundary": "索引器不必使用数组，也不必采用零基索引；判断行为应阅读契约和访问器实现。"
+    }
+  },
+  {
+    "id": "Q86",
+    "title": "readonly 字段与集合内容",
+    "kind": "single",
+    "tier": "core",
+    "topics": [
+      "readonly",
+      "可变引用"
+    ],
+    "scenario": "",
+    "prompt": "MutateReadOnlyReference() 返回什么？",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Modeling.cs",
+        "region": "Q86"
+      }
+    ],
+    "options": {
+      "A": "1",
+      "B": "2",
+      "C": "不能编译：readonly 对象不能调用 Add",
+      "D": "抛出 NotSupportedException"
+    },
+    "answers": [
+      "B"
+    ],
+    "rationale": {
+      "A": "代码添加了第二个元素。",
+      "B": "readonly 限制字段的重新赋值；List 对象的内容仍可修改。",
+      "C": "readonly 不把引用指向的对象变为不可变对象。",
+      "D": "普通 List.Add 不因持有它的字段是 readonly 而拒绝写入。"
+    },
+    "takeaway": "不变量涉及集合内容时，使用封装、复制或不可变集合；不能只靠 readonly 字段。",
+    "learn": [
+      "docs/03-modeling.md"
+    ],
+    "sources": [
+      {
+        "title": "readonly 字段",
+        "url": "https://learn.microsoft.com/zh-cn/dotnet/csharp/language-reference/keywords/readonly"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "checks": [
+        "Q86"
+      ],
+      "note": "断言给定样例的返回值或异常，并结合官方契约核对干扰项；不据此推广性能、跨平台 ABI 或其他输入。"
+    },
+    "explanation": {
+      "principle": "readonly 引用字段限制字段重新绑定，不限制所引用对象的状态变化。引用本身与对象内容是两层可变性。",
+      "steps": [
+        "Items 初始指向含 draft 的普通 List，Add 调用修改这个列表对象而非字段引用。",
+        "再加入 approved 后列表包含两项，所以 Count 为 2，不会因 readonly 抛异常。"
+      ],
+      "boundary": "若 API 要承诺内容不可变，需要封装写入口、复制或使用不可变数据结构；只读字段不提供深度冻结。"
+    }
+  },
+  {
+    "id": "Q87",
+    "title": "public const 的发布边界",
+    "kind": "single",
+    "tier": "deep",
+    "topics": [
+      "const",
+      "程序集版本"
+    ],
+    "scenario": "库 v1 发布 public const int Limit = 10；客户端编译后，部署二进制兼容的 v2 将该常量改为 20。客户端使用该常量构造实参，未重新编译。",
+    "prompt": "对于这个已编译的普通 C# 客户端，替换库后，哪项准确描述常量的取值与更新方式？",
+    "code": [],
+    "options": {
+      "A": "只要替换库，所有客户端就必定使用 20。",
+      "B": "const 与 static readonly 在客户端的取值机制完全相同。",
+      "C": "旧客户端使用编译时嵌入的 10；要采用 20，需重新编译客户端。若希望以后随库更新取值，可改用运行时读取的 API。",
+      "D": "运行时会因常量值变化而拒绝加载库。"
+    },
+    "answers": [
+      "C"
+    ],
+    "rationale": {
+      "A": "替换程序集不会改写已编译调用方内嵌的值。",
+      "B": "static readonly 是运行时字段读取，不能套用 const 的嵌入规则。",
+      "C": "C# 在编译调用方时将 const 的值代入使用处，更新库并不重写客户端中的常量。",
+      "D": "前提是二进制兼容替换，常量值变化不是这里的加载失败原因。"
+    },
+    "takeaway": "仅把真正稳定的值发布为 const；可能随版本改变的配置应选择运行时读取。",
+    "learn": [
+      "docs/03-modeling.md"
+    ],
+    "sources": [
+      {
+        "title": "常量及程序集版本",
+        "url": "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/constants"
+      }
+    ],
+    "verification": {
+      "kind": "documentation",
+      "note": "C# 在编译调用方时将 const 的值代入使用处，更新库并不重写客户端中的常量。 本题人工核对官方契约，未声称执行跨程序集或本机库实验。"
+    },
+    "explanation": {
+      "principle": "const 的值会在编译调用方时嵌入使用处，运行时替换库不会重新编译已生成的客户端代码。",
+      "steps": [
+        "客户端用 v1 的 Limit 构造实参时已把 10 编入自身产物。",
+        "库 v2 将 Limit 改为 20，不会改写旧客户端中的 10；客户端重新编译并引用 v2 后，才会在该使用处嵌入 20。"
+      ],
+      "boundary": "如果希望值随库版本更新，应从 API 设计时选择 static readonly 字段或属性，并重新编译调用方以使用该 API；仅替换已有库不能改变旧客户端内嵌的常量。"
+    }
+  },
+  {
+    "id": "Q88",
+    "title": "可选参数与虚调用分两步",
+    "kind": "single",
+    "tier": "deep",
+    "topics": [
+      "可选参数",
+      "虚调用"
+    ],
+    "scenario": "",
+    "prompt": "OptionalDispatch() 返回什么？",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Modeling.cs",
+        "region": "Q88"
+      }
+    ],
+    "options": {
+      "A": "(20, 20)",
+      "B": "(10, 10)",
+      "C": "不能编译：override 不能声明默认值",
+      "D": "(10, 20)"
+    },
+    "answers": [
+      "D"
+    ],
+    "rationale": {
+      "A": "viaBase 的默认值来自 BaseSender.Send。",
+      "B": "derived 的调用按 DerivedSender 声明补入 20。",
+      "C": "重写方法可以声明可选参数；设计上应避免默认值不一致。",
+      "D": "省略的实参按调用处可见的静态声明补入；两次调用都执行派生实现，但分别接收 10、20。"
+    },
+    "takeaway": "虚调用选择实现，默认实参由调用方决定；公共 API 的默认值要保持一致并考虑重编译。",
+    "learn": [
+      "docs/03-modeling.md"
+    ],
+    "sources": [
+      {
+        "title": "命名参数和可选参数",
+        "url": "https://learn.microsoft.com/zh-cn/dotnet/csharp/programming-guide/classes-and-structs/named-and-optional-arguments"
+      },
+      {
+        "title": "表达式：调用与实参",
+        "url": "https://learn.microsoft.com/zh-cn/dotnet/csharp/language-reference/language-specification/expressions"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "checks": [
+        "Q88"
+      ],
+      "note": "断言给定样例的返回值或异常，并结合官方契约核对干扰项；不据此推广性能、跨平台 ABI 或其他输入。"
+    },
+    "explanation": {
+      "principle": "可选实参在调用处根据静态可见声明补入；虚分派随后选择实际对象的实现。这两个决定发生在不同层次。",
+      "steps": [
+        "viaBase 的静态类型为 BaseSender，省略实参时补入 10；derived 的调用补入派生声明的 20。",
+        "两次均分派到 DerivedSender.Send，但该方法原样返回传来的数值，因此结果为 10、20。"
+      ],
+      "boundary": "默认值不同会使同一对象因调用视图产生差异；公共虚 API 应保持默认值一致，并考虑客户端重编译。"
+    }
+  },
+  {
+    "id": "Q89",
+    "title": "命名实参的求值顺序",
+    "kind": "single",
+    "tier": "core",
+    "topics": [
+      "命名参数",
+      "求值顺序"
+    ],
+    "scenario": "",
+    "prompt": "NamedEvaluation() 返回什么？",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Modeling.cs",
+        "region": "Q89"
+      }
+    ],
+    "options": {
+      "A": "(2, 1, \"B,A\")",
+      "B": "(1, 2, \"A,B\")",
+      "C": "(1, 2, \"B,A\")",
+      "D": "顺序未定义，依平台而定"
+    },
+    "answers": [
+      "A"
+    ],
+    "rationale": {
+      "A": "实参表达式按调用处从左到右求值，B 先得 1，A 再得 2；参数名决定值传入哪一位置。",
+      "B": "命名不会把表达式按形参声明顺序重新执行。",
+      "C": "B 的值绑定 second，A 的值绑定 first。",
+      "D": "这里的实参求值次序由 C# 规定。"
+    },
+    "takeaway": "命名参数改善表达意图，但不会消除副作用；最好让实参表达式简单。",
+    "learn": [
+      "docs/03-modeling.md"
+    ],
+    "sources": [
+      {
+        "title": "表达式：实参列表",
+        "url": "https://learn.microsoft.com/zh-cn/dotnet/csharp/language-reference/language-specification/expressions"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "checks": [
+        "Q89"
+      ],
+      "note": "断言给定样例的返回值或异常，并结合官方契约核对干扰项；不据此推广性能、跨平台 ABI 或其他输入。"
+    },
+    "explanation": {
+      "principle": "实参表达式按调用处从左到右求值，命名参数只决定求值结果绑定哪个形参，不按声明顺序重排计算。",
+      "steps": [
+        "Next(B) 先执行，记日志 B 并返回 1；Next(A) 后执行，记 A 并返回 2。",
+        "first 接收 A 的 2，second 接收 B 的 1，故结果为 2、1、B,A。"
+      ],
+      "boundary": "命名参数提升可读性，却不消除实参副作用；调整实参书写位置可能改变执行顺序。"
+    }
+  },
+  {
+    "id": "Q90",
+    "title": "默认接口实现的调用视图",
+    "kind": "single",
+    "tier": "deep",
+    "topics": [
+      "默认接口实现",
+      "接口"
+    ],
+    "scenario": "",
+    "prompt": "DefaultInterface() 返回什么？",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Modeling.cs",
+        "region": "Q90"
+      }
+    ],
+    "options": {
+      "A": "(\"default\", false)",
+      "B": "(\"default\", true)",
+      "C": "不能编译：Labelled 必须实现 Label",
+      "D": "抛出 MissingMethodException"
+    },
+    "answers": [
+      "B"
+    ],
+    "rationale": {
+      "A": "默认接口实现不会向类声明注入同名公开方法。",
+      "B": "通过 ILabel 调用可使用默认实现；Labelled 没有声明公开 Label 方法，反射查找类成员为空。",
+      "C": "这里的普通类可以使用接口提供的默认实现。",
+      "D": "接口调用可正常分派到默认方法。"
+    },
+    "takeaway": "调用方需要合适的接口视图；不要把默认接口实现当成类成员的自动扩展。",
+    "learn": [
+      "docs/03-modeling.md"
+    ],
+    "sources": [
+      {
+        "title": "默认接口成员",
+        "url": "https://learn.microsoft.com/zh-cn/dotnet/csharp/language-reference/keywords/interface"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "checks": [
+        "Q90"
+      ],
+      "note": "断言给定样例的返回值或异常，并结合官方契约核对干扰项；不据此推广性能、跨平台 ABI 或其他输入。"
+    },
+    "explanation": {
+      "principle": "默认接口方法提供接口调用的实现，并不会向实现类自动添加一个同名公开类成员。调用视图与运行时类成员表要分开看。",
+      "steps": [
+        "ILabel 变量调用 Label 时找到接口中的默认实现，返回 default。",
+        "Labelled 自身没有声明公开 Label，GetMethod 在类上查找得到 null，所以第二项为 true。"
+      ],
+      "boundary": "若调用方需要类成员语法，应由类显式公开相应方法；反射发现规则不能直接按接口调用体验推断。"
+    }
+  },
+  {
+    "id": "Q91",
+    "title": "抽象成员嵌入公共流程",
+    "kind": "single",
+    "tier": "core",
+    "topics": [
+      "抽象类",
+      "模板方法"
+    ],
+    "scenario": "",
+    "prompt": "TemplateCall() 返回什么？",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Modeling.cs",
+        "region": "Q91"
+      }
+    ],
+    "options": {
+      "A": "\"work\"",
+      "B": "\"begin,end\"",
+      "C": "\"begin,work,end\"",
+      "D": "不能编译：Run 不是 virtual"
+    },
+    "answers": [
+      "C"
+    ],
+    "rationale": {
+      "A": "Run 的前后步骤仍然执行。",
+      "B": "抽象 Execute 有派生实现，不会被跳过。",
+      "C": "继承的 Run 执行共享流程，Execute 调用分派到 ImportJob 的重写。",
+      "D": "Run 无需 virtual 才能在其内部调用抽象成员。"
+    },
+    "takeaway": "共享流程可封装在非虚方法中，只开放必要的变化点；构造阶段则要谨慎调用虚成员。",
+    "learn": [
+      "docs/03-modeling.md"
+    ],
+    "sources": [
+      {
+        "title": "继承与抽象成员",
+        "url": "https://learn.microsoft.com/zh-cn/dotnet/csharp/fundamentals/object-oriented/inheritance"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "checks": [
+        "Q91"
+      ],
+      "note": "断言给定样例的返回值或异常，并结合官方契约核对干扰项；不据此推广性能、跨平台 ABI 或其他输入。"
+    },
+    "explanation": {
+      "principle": "非虚方法仍可在流程内部调用抽象或虚成员；流程本身固定与内部变化点动态分派并不矛盾。",
+      "steps": [
+        "继承的 Run 先加入 begin，再调用 Execute，此调用分派到 ImportJob 的重写，加入 work。",
+        "控制返回 Run 后加入 end，故完整顺序为 begin,work,end。"
+      ],
+      "boundary": "模板方法可以只开放必要变化点；本题工作步骤正常结束，若抛异常，末尾步骤不会自动成为 finally。"
+    }
+  },
+  {
+    "id": "Q92",
+    "title": "record struct 的 with 表达式",
+    "kind": "single",
+    "tier": "core",
+    "topics": [
+      "record struct",
+      "with"
+    ],
+    "scenario": "",
+    "prompt": "CopyPosition() 返回什么？",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Modeling.cs",
+        "region": "Q92"
+      }
+    ],
+    "options": {
+      "A": "(2, 2, true)",
+      "B": "(1, 2, true)",
+      "C": "不能编译：readonly record struct 不能使用 with",
+      "D": "(1, 2, false)"
+    },
+    "answers": [
+      "D"
+    ],
+    "rationale": {
+      "A": "修改副本的 X 不会修改原值。",
+      "B": "record 的相等比较包含这里的 X。",
+      "C": "with 可用于 readonly record struct 的初始化更新。",
+      "D": "with 基于原值创建新值并初始化 X；原坐标不变，值相等比较发现 X 不同。"
+    },
+    "takeaway": "值记录适合小型数据，但包含引用成员时仍需另外考虑对象图共享。",
+    "learn": [
+      "docs/03-modeling.md"
+    ],
+    "sources": [
+      {
+        "title": "记录类型",
+        "url": "https://learn.microsoft.com/zh-cn/dotnet/csharp/language-reference/builtin-types/record"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "checks": [
+        "Q92"
+      ],
+      "note": "断言给定样例的返回值或异常，并结合官方契约核对干扰项；不据此推广性能、跨平台 ABI 或其他输入。"
+    },
+    "explanation": {
+      "principle": "record struct 是值类型；with 从原值复制并初始化指定成员，生成的记录相等性比较成员值。",
+      "steps": [
+        "original.X 为 1，copy 在其副本上初始化 X 为 2，不写回 original。",
+        "两者 X 不同，值相等比较为 false，返回 1、2、false。"
+      ],
+      "boundary": "包含引用成员的值记录仍会共享被引用对象；with 不等于对整个对象图深复制。"
+    }
+  },
+  {
+    "id": "Q93",
+    "title": "匿名类型的形状与相等",
+    "kind": "single",
+    "tier": "core",
+    "topics": [
+      "匿名类型",
+      "相等"
+    ],
+    "scenario": "",
+    "prompt": "AnonymousEquality() 返回什么？代码处于同一程序集。",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Modeling.cs",
+        "region": "Q93"
+      }
+    ],
+    "options": {
+      "A": "(true, false)",
+      "B": "(false, false)",
+      "C": "(true, true)",
+      "D": "不能编译：不同匿名类型不能调用 Equals"
+    },
+    "answers": [
+      "A"
+    ],
+    "rationale": {
+      "A": "相同名称、类型、顺序构成同一匿名类型且按属性值比较；重排属性形成不同类型。",
+      "B": "同形状的两个实例不要求引用相同，Equals 比较属性值。",
+      "C": "顺序参与匿名类型形状，c 不与 a 同型。",
+      "D": "这里使用 object 参数的 Equals，可以比较不同对象类型。"
+    },
+    "takeaway": "匿名投影适合局部查询；跨 API 边界优先选择明确的命名类型或元组。",
+    "learn": [
+      "docs/03-modeling.md"
+    ],
+    "sources": [
+      {
+        "title": "匿名类型",
+        "url": "https://learn.microsoft.com/zh-cn/dotnet/csharp/programming-guide/classes-and-structs/anonymous-types"
+      },
+      {
+        "title": "匿名对象创建表达式",
+        "url": "https://learn.microsoft.com/zh-cn/dotnet/csharp/language-reference/language-specification/expressions"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "checks": [
+        "Q93"
+      ],
+      "note": "断言给定样例的返回值或异常，并结合官方契约核对干扰项；不据此推广性能、跨平台 ABI 或其他输入。"
+    },
+    "explanation": {
+      "principle": "同一程序集内，相同名称、类型和顺序的匿名属性产生相同匿名类型，其 Equals 按属性值比较；顺序也属于形状。",
+      "steps": [
+        "a 与 b 形状一致，Name 和 Count 的值也一致，所以 Equals 返回 true。",
+        "c 把属性顺序调换，产生不同匿名类型，即使名称和值相同，a.Equals(c) 仍为 false。"
+      ],
+      "boundary": "object 形式的 Equals 可接收不同对象，并不要求调用处同型；跨 API 的稳定模型宜使用命名类型。"
+    }
+  },
+  {
+    "id": "Q94",
+    "title": "实例方法与扩展方法的绑定",
+    "kind": "single",
+    "tier": "core",
+    "topics": [
+      "扩展方法",
+      "成员绑定"
+    ],
+    "scenario": "",
+    "prompt": "两个片段处于同一项目与作用域。BindExtension() 返回什么？",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Modeling.cs",
+        "region": "Q94-types"
+      },
+      {
+        "path": "tests/Quiz.Checks/Modeling.cs",
+        "region": "Q94-call"
+      }
+    ],
+    "options": {
+      "A": "(false, false)",
+      "B": "(true, false)",
+      "C": "(true, true)",
+      "D": "不能编译：扩展与实例方法同名冲突"
+    },
+    "answers": [
+      "B"
+    ],
+    "rationale": {
+      "A": "扩展方法不能覆盖适用的实例方法。",
+      "B": "适用的实例 Contains 优先；显式静态调用执行我们定义的恒为 false 的方法。",
+      "C": "显式调用 QuizStringExtensions.Contains 进入所示方法体。",
+      "D": "同名扩展可以存在，实例调用有明确的绑定规则。"
+    },
+    "takeaway": "扩展主要补充能力；类型后来新增实例成员可能改变重新编译后的绑定结果。",
+    "learn": [
+      "docs/03-modeling.md"
+    ],
+    "sources": [
+      {
+        "title": "扩展成员绑定",
+        "url": "https://learn.microsoft.com/zh-cn/dotnet/csharp/programming-guide/classes-and-structs/extension-methods"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "checks": [
+        "Q94"
+      ],
+      "note": "断言给定样例的返回值或异常，并结合官方契约核对干扰项；不据此推广性能、跨平台 ABI 或其他输入。"
+    },
+    "explanation": {
+      "principle": "扩展方法参与编译时查找，但不会覆盖适用的实例成员；以扩展类名调用则是明确的静态方法调用。",
+      "steps": [
+        "字符串本身的 Contains 适用于参数 a，因此 abc.Contains(a) 返回 true。",
+        "显式 QuizStringExtensions.Contains 进入所示恒为 false 的实现，第二项为 false。"
+      ],
+      "boundary": "类型新增实例成员可能改变重新编译后的绑定；扩展工具应避免与核心成员产生令人困惑的同名行为。"
+    }
+  },
+  {
+    "id": "Q95",
+    "title": "C# 14 扩展属性与类型结构",
+    "kind": "single",
+    "tier": "deep",
+    "topics": [
+      "扩展属性",
+      "元数据"
+    ],
+    "scenario": "",
+    "prompt": "两个片段处于同一项目与作用域。ExtensionProperty() 返回什么？FirstUnit 取 UTF-16 首代码单元。",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Modeling.cs",
+        "region": "Q95-types"
+      },
+      {
+        "path": "tests/Quiz.Checks/Modeling.cs",
+        "region": "Q95-call"
+      }
+    ],
+    "options": {
+      "A": "('c', false)",
+      "B": "不能编译：扩展块只支持方法",
+      "C": "('c', true)",
+      "D": "运行时因 string 是 sealed 而失败"
+    },
+    "answers": [
+      "C"
+    ],
+    "rationale": {
+      "A": "反射查看 string 不会找到定义在扩展类的属性。",
+      "B": "C# 14 扩展块支持属性。",
+      "C": "扩展属性可以按成员语法使用，但不会向 System.String 的运行时成员表注入属性。",
+      "D": "扩展不是继承或运行时类型改写，sealed 不阻止它。"
+    },
+    "takeaway": "扩展成员依赖编译时作用域；反射、动态绑定和框架发现不能直接套用成员语法。",
+    "learn": [
+      "docs/03-modeling.md"
+    ],
+    "sources": [
+      {
+        "title": "C# 14 扩展成员",
+        "url": "https://learn.microsoft.com/zh-cn/dotnet/csharp/programming-guide/classes-and-structs/extension-methods"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "checks": [
+        "Q95"
+      ],
+      "note": "断言给定样例的返回值或异常，并结合官方契约核对干扰项；不据此推广性能、跨平台 ABI 或其他输入。"
+    },
+    "explanation": {
+      "principle": "C# 14 扩展属性提供编译期成员语法，实际实现位于扩展类型；它不修改被扩展类型的运行时成员表。",
+      "steps": [
+        "cat.FirstUnit 调用扩展属性访问器，读取 UTF-16 下标 0，得到 c。",
+        "在 System.String 上反射查找 FirstUnit 不会发现扩展属性，所以“未找到”为 true。"
+      ],
+      "boundary": "sealed 不阻止扩展；动态绑定和反射发现也不会自动获得编译期扩展能力，字符单位还需遵守本题定义。"
+    }
+  },
+  {
+    "id": "Q96",
+    "title": "显式与隐式转换各有方向",
+    "kind": "single",
+    "tier": "core",
+    "topics": [
+      "用户定义转换",
+      "建模"
+    ],
+    "scenario": "",
+    "prompt": "ConvertDistance() 返回什么？",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Modeling.cs",
+        "region": "Q96"
+      }
+    ],
+    "options": {
+      "A": "不能编译：两个方向都必须 implicit",
+      "B": "不能编译：record struct 不支持转换运算符",
+      "C": "0：显式转换忽略用户定义实现",
+      "D": "12"
+    },
+    "answers": [
+      "D"
+    ],
+    "rationale": {
+      "A": "每个转换方向可以分别选择 implicit 或 explicit。",
+      "B": "结构与记录结构可以声明用户定义转换。",
+      "C": "显式转换使用适用的用户定义转换，不会将结果清零。",
+      "D": "int 到 Distance 使用隐式转换；显式转回 int 调用所示实现并返回 Metres。"
+    },
+    "takeaway": "只为不会令人意外的转换开放 implicit；丢失信息、单位混淆或失败风险通常需要 explicit。",
+    "learn": [
+      "docs/03-modeling.md"
+    ],
+    "sources": [
+      {
+        "title": "用户定义转换",
+        "url": "https://learn.microsoft.com/zh-cn/dotnet/csharp/language-reference/operators/user-defined-conversion-operators"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "checks": [
+        "Q96"
+      ],
+      "note": "断言给定样例的返回值或异常，并结合官方契约核对干扰项；不据此推广性能、跨平台 ABI 或其他输入。"
+    },
+    "explanation": {
+      "principle": "用户定义转换按方向分别声明 implicit 或 explicit；隐式赋值与显式强制转换会调用各自适用的实现。",
+      "steps": [
+        "Distance distance = 12 使用 int 到 Distance 的隐式转换，建立 Metres 为 12 的值。",
+        "转回 int 的表达式显式调用返回 Metres 的运算符，因此结果为 12。"
+      ],
+      "boundary": "implicit 宜用于信息和语义都明确的转换；单位变化、丢失精度或失败风险通常需要更醒目的调用方式。"
+    }
+  },
+  {
+    "id": "Q97",
+    "title": "自定义加法与操作数状态",
+    "kind": "single",
+    "tier": "core",
+    "topics": [
+      "运算符重载",
+      "对象身份"
+    ],
+    "scenario": "",
+    "prompt": "AddVectors() 返回什么？",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Modeling.cs",
+        "region": "Q97"
+      }
+    ],
+    "options": {
+      "A": "(1, 3, false)",
+      "B": "(3, 3, true)",
+      "C": "(1, 3, true)",
+      "D": "不能编译：class 不能重载 +"
+    },
+    "answers": [
+      "A"
+    ],
+    "rationale": {
+      "A": "所示 operator + 创建新的 Vector，left 不变，sum 与 left 不是同一对象。",
+      "B": "实现没有对 left 赋值或修改。",
+      "C": "new 创建另一个对象。",
+      "D": "类可以重载支持的运算符。"
+    },
+    "takeaway": "按数学直觉设计运算符，但实际副作用和对象分配仍要看实现与契约。",
+    "learn": [
+      "docs/03-modeling.md"
+    ],
+    "sources": [
+      {
+        "title": "运算符重载",
+        "url": "https://learn.microsoft.com/zh-cn/dotnet/csharp/language-reference/operators/operator-overloading"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "checks": [
+        "Q97"
+      ],
+      "note": "断言给定样例的返回值或异常，并结合官方契约核对干扰项；不据此推广性能、跨平台 ABI 或其他输入。"
+    },
+    "explanation": {
+      "principle": "重载运算符是用户定义的操作，符号本身不决定可变性、对象身份或分配行为；必须结合实现判断。",
+      "steps": [
+        "所示加法读取 left.X=1 与右值 2，执行 new Vector(3)。",
+        "left 没有被修改，sum 指向新对象，结果为 1、3、false。"
+      ],
+      "boundary": "其他类型的运算符可能采用不同策略；API 设计宜符合使用者对该符号的合理预期，并明确成本。"
+    }
+  },
+  {
+    "id": "Q98",
+    "title": "多播委托的返回值",
+    "kind": "single",
+    "tier": "core",
+    "topics": [
+      "委托",
+      "多播"
+    ],
+    "scenario": "",
+    "prompt": "InvokeDelegates() 返回什么？假设两个处理器均不抛异常。",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Modeling.cs",
+        "region": "Q98"
+      }
+    ],
+    "options": {
+      "A": "(5, \"first\")",
+      "B": "(10, \"first,second\")",
+      "C": "(15, \"first,second\")",
+      "D": "不能编译：只有 Action 可以组合"
+    },
+    "answers": [
+      "B"
+    ],
+    "rationale": {
+      "A": "组合调用仍执行第二个处理器。",
+      "B": "调用列表按顺序执行；组合委托返回最后一个处理器的返回值。",
+      "C": "多播委托不会自动聚合返回值。",
+      "D": "非 void 委托也可组合，但返回值只来自最后一次调用。"
+    },
+    "takeaway": "需要收集所有结果或独立处理失败时，显式遍历调用列表或建模为处理器集合。",
+    "learn": [
+      "docs/03-modeling.md"
+    ],
+    "sources": [
+      {
+        "title": "使用委托",
+        "url": "https://learn.microsoft.com/zh-cn/dotnet/csharp/programming-guide/delegates/using-delegates"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "checks": [
+        "Q98"
+      ],
+      "note": "断言给定样例的返回值或异常，并结合官方契约核对干扰项；不据此推广性能、跨平台 ABI 或其他输入。"
+    },
+    "explanation": {
+      "principle": "多播委托按调用列表顺序执行；非 void 委托正常完成时返回最后一个处理器的结果，不自动汇总各次结果。",
+      "steps": [
+        "第一个处理器加入 first 并返回 5，随后第二个加入 second 并返回 10。",
+        "组合调用最终返回 10，日志仍包含两次执行，所以结果为 10、first,second。"
+      ],
+      "boundary": "本题假设都不抛异常；某处理器抛出时普通调用会停止，若需独立失败处理或收集结果，应显式遍历。"
+    }
+  },
+  {
+    "id": "Q99",
+    "title": "自定义事件访问器",
+    "kind": "single",
+    "tier": "core",
+    "topics": [
+      "事件",
+      "订阅"
+    ],
+    "scenario": "",
+    "prompt": "EventAccessors() 返回什么？只讨论所示计数行为。",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Modeling.cs",
+        "region": "Q99"
+      }
+    ],
+    "options": {
+      "A": "(0, 0)",
+      "B": "(2, 0)",
+      "C": "(1, 1)",
+      "D": "不能编译：事件必须有隐式委托字段"
+    },
+    "answers": [
+      "C"
+    ],
+    "rationale": {
+      "A": "两次订阅操作都会调用相应访问器。",
+      "B": "移除调用 remove，不是再次调用 add。",
+      "C": "+= 调用 add，-= 调用 remove；这里的访问器分别增加计数，并未保存处理器。",
+      "D": "事件可声明自定义访问器，不要求使用自动生成的存储。"
+    },
+    "takeaway": "事件是订阅接口；是否保存、转发、触发或同步处理器由实现负责。",
+    "learn": [
+      "docs/03-modeling.md"
+    ],
+    "sources": [
+      {
+        "title": "自定义事件访问器",
+        "url": "https://learn.microsoft.com/zh-cn/dotnet/csharp/programming-guide/events/how-to-implement-custom-event-accessors"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "checks": [
+        "Q99"
+      ],
+      "note": "断言给定样例的返回值或异常，并结合官方契约核对干扰项；不据此推广性能、跨平台 ABI 或其他输入。"
+    },
+    "explanation": {
+      "principle": "event 定义订阅和取消订阅接口，自定义 add/remove 访问器可以执行任意所示逻辑，并不要求自动生成委托存储。",
+      "steps": [
+        "+= 调用 add 一次，使 Adds 从 0 变为 1。",
+        "-= 调用 remove 一次，使 Removes 变为 1；这里没有保存或调用 handler，结果为 1、1。"
+      ],
+      "boundary": "是否转发、保存、触发以及如何同步，都要看事件实现；订阅语法本身不承诺存在一个可读取的委托字段。"
+    }
+  },
+  {
+    "id": "Q100",
+    "title": "partial 方法与实参求值",
+    "kind": "single",
+    "tier": "deep",
+    "topics": [
+      "partial",
+      "编译转换"
+    ],
+    "scenario": "",
+    "prompt": "PartialHook.Run() 返回什么？声明没有访问修饰符、无实现，符合可省略的 partial void 规则。",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Modeling.cs",
+        "region": "Q100"
+      }
+    ],
+    "options": {
+      "A": "1",
+      "B": "不能编译：任何 partial 方法都必须实现",
+      "C": "调用时抛出 MissingMethodException",
+      "D": "0"
+    },
+    "answers": [
+      "D"
+    ],
+    "rationale": {
+      "A": "被移除的调用不会先执行实参副作用。",
+      "B": "符合题干限制的 partial void 可以没有实现。",
+      "C": "调用在编译阶段已移除，不会留待运行时查找方法。",
+      "D": "没有实现的这个 partial 方法及调用被编译器删除，实参 Next() 也不会求值。"
+    },
+    "takeaway": "可选 partial 钩子的实参不要承担必需副作用；带公开访问或返回值等扩展签名有不同实现要求。",
+    "learn": [
+      "docs/03-modeling.md"
+    ],
+    "sources": [
+      {
+        "title": "Partial 类与成员",
+        "url": "https://learn.microsoft.com/zh-cn/dotnet/csharp/programming-guide/classes-and-structs/partial-classes-and-methods"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "checks": [
+        "Q100"
+      ],
+      "note": "断言给定样例的返回值或异常，并结合官方契约核对干扰项；不据此推广性能、跨平台 ABI 或其他输入。"
+    },
+    "explanation": {
+      "principle": "符合可省略规则的 partial void 方法未提供实现时，编译器移除其声明和调用，连调用实参的求值也一并移除。",
+      "steps": [
+        "Run 先把 calls 置零，Observe 没有实现，所以 Observe(Next()) 不进入运行代码。",
+        "Next 因此从未递增 calls，返回值保持 0，不会等待运行时寻找缺失方法。"
+      ],
+      "boundary": "带显式访问修饰符、返回值等签名有不同实现要求；可选钩子的实参不能承担必须发生的业务副作用。"
+    }
+  }
+]

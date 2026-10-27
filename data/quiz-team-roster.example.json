@@ -1,0 +1,125 @@
+{
+  "schema": 1,
+  "members": [
+    {
+      "id": "member-001",
+      "name": "示例学员01",
+      "aliases": []
+    },
+    {
+      "id": "member-002",
+      "name": "示例学员02",
+      "aliases": []
+    },
+    {
+      "id": "member-003",
+      "name": "示例学员03",
+      "aliases": []
+    },
+    {
+      "id": "member-004",
+      "name": "示例学员04",
+      "aliases": []
+    },
+    {
+      "id": "member-005",
+      "name": "示例学员05",
+      "aliases": []
+    },
+    {
+      "id": "member-006",
+      "name": "示例学员06",
+      "aliases": []
+    },
+    {
+      "id": "member-007",
+      "name": "示例学员07",
+      "aliases": []
+    },
+    {
+      "id": "member-008",
+      "name": "示例学员䶮",
+      "aliases": []
+    },
+    {
+      "id": "member-009",
+      "name": "示例学员09",
+      "aliases": []
+    },
+    {
+      "id": "member-010",
+      "name": "示例学员10",
+      "aliases": []
+    },
+    {
+      "id": "member-011",
+      "name": "示例学员11",
+      "aliases": []
+    },
+    {
+      "id": "member-012",
+      "name": "示例学员12",
+      "aliases": []
+    },
+    {
+      "id": "member-013",
+      "name": "示例学员13",
+      "aliases": []
+    },
+    {
+      "id": "member-014",
+      "name": "示例学员14",
+      "aliases": []
+    },
+    {
+      "id": "member-015",
+      "name": "示例学员15",
+      "aliases": []
+    },
+    {
+      "id": "member-016",
+      "name": "示例学员16",
+      "aliases": []
+    },
+    {
+      "id": "member-017",
+      "name": "示例学员17",
+      "aliases": []
+    },
+    {
+      "id": "member-018",
+      "name": "示例学员18",
+      "aliases": []
+    },
+    {
+      "id": "member-019",
+      "name": "示例学员19",
+      "aliases": []
+    },
+    {
+      "id": "member-020",
+      "name": "示例学员20",
+      "aliases": []
+    },
+    {
+      "id": "member-021",
+      "name": "示例学员21",
+      "aliases": []
+    },
+    {
+      "id": "member-022",
+      "name": "示例学员22",
+      "aliases": []
+    },
+    {
+      "id": "member-023",
+      "name": "示例学员23",
+      "aliases": []
+    },
+    {
+      "id": "member-024",
+      "name": "示例学员24",
+      "aliases": []
+    }
+  ]
+}

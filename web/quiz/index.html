@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>C# 迁移能力自测</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/id.js" defer></script>
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="考试首页"><span class="brand-icon">C#</span><span>C# 题库<small>FROM C++ & PYTHON</small></span></a>
+    <span class="edition">.NET 10 <span> / </span> C# 14</span>
+  </header>
+  <div id="notice" class="notice" role="status" hidden></div>
+  <main id="app" tabindex="-1"><div class="loading">正在准备试卷…</div></main>
+  <dialog id="submit-dialog" aria-labelledby="submit-title">
+    <div class="dialog-content">
+      <p class="eyebrow">SUBMIT EXAM</p>
+      <h2 id="submit-title">准备交卷</h2>
+      <p id="submit-summary"></p>
+      <p class="muted">交卷后生成成绩与逐题解析，本次答案将固定。</p>
+      <p id="submit-error" class="error-text" role="alert" hidden></p>
+      <div class="dialog-actions">
+        <button id="cancel-submit" class="button secondary">返回检查</button>
+        <button id="confirm-submit" class="button primary">确认交卷</button>
+      </div>
+    </div>
+  </dialog>
+  <noscript>考试需要启用 JavaScript。也可在仓库 docs/quiz/ 中阅读题面与解析。</noscript>
+</body>
+</html>

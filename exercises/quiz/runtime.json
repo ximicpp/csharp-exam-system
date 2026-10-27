@@ -1,0 +1,747 @@
+[
+  {
+    "id": "Q41",
+    "title": "把 class 改成 struct 就能摆脱 GC 吗",
+    "kind": "single",
+    "tier": "core",
+    "topics": ["值语义", "内联存储", "性能建模"],
+    "scenario": "性能分析发现大量独立的数据项对象。团队准备把含有 string 字段的数据项从 class 改为 struct，直接存入该结构体的数组；使用普通托管代码，不涉及 unsafe 自定义布局。",
+    "prompt": "评审这次修改时，哪项准确描述改写后的对象图？",
+    "code": [],
+    "options": {
+      "A": "整个数组转为栈存储；元素改成值类型后，数组和字符串都脱离 GC 管理。",
+      "B": "数组内联保存数据项的值；各元素的 string 字段仍保存指向字符串对象的引用。",
+      "C": "数组仍只保存引用；每个 struct 元素都必须单独装箱，才能放入这个数组。",
+      "D": "数组内联保存数据项及字符串字符；复制一个元素会同时复制字符串的字符内容。"
+    },
+    "answers": ["B"],
+    "rationale": {
+      "A": "数组仍是托管对象，字符串也不会因外层改为 struct 而脱离 GC。值类型不是固定物理存储位置的承诺。",
+      "B": "结构体数组直接容纳元素值，省去了逐个独立数据项对象这一层；引用字段仍连接到数组外的字符串对象。是否更快还取决于复制成本和实际负载。",
+      "C": "具体 struct 类型的数组可以直接保存这些值，无须逐元素装箱。转换到 object 等引用类型才涉及另一种存储边界。",
+      "D": "复制元素会复制 string 引用，不会深复制字符。内联的是结构体自身的字段值，不是这些字段引用的整张对象图。"
+    },
+    "takeaway": "先用值语义与对象图理解布局，再评估缓存局部性、复制和分配；不要用“struct 在栈、class 在堆”替代设计。",
+    "learn": ["docs/02-values.md", "docs/13-memory.md", "docs/10-performance.md"],
+    "sources": [
+      {"title": "Choosing Between Class and Struct", "url": "https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/choosing-between-class-and-struct"},
+      {"title": "Value types", "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/value-types"},
+      {"title": "Reduce memory allocations", "url": "https://learn.microsoft.com/en-us/dotnet/csharp/advanced-topics/performance/"}
+    ],
+    "verification": {"kind": "documentation", "note": "逐项核对数组内联值存储与引用字段，唯一正确对象图为 B；不以固定地址、布局大小或一次性能比较证明语义。"},
+    "explanation": {
+      "principle": "struct 的关键是值语义，而非固定的存储位置。struct 数组把元素的字段直接放在数组元素区，但其中的引用字段仍指向独立对象。",
+      "steps": [
+        "把数据项改成 struct 可减少每个元素各有一个独立对象的布局；数组本身仍是托管对象。",
+        "string 字段保存引用，字符串内容不会因此内嵌到元素，也不会因此免除字符串分配与 GC 管理。"
+      ],
+      "boundary": "减少对象数量不保证整体更快；结构体大小、复制成本、访问方式和实际分配量都需结合负载判断。"
+    }
+  },
+  {
+    "id": "Q42",
+    "title": "object 中保存的是可变值的哪一份",
+    "kind": "single",
+    "tier": "core",
+    "topics": ["装箱", "解箱", "值复制"],
+    "scenario": "",
+    "prompt": "调用 BoxingSnapshot() 返回什么？",
+    "code": [{"path": "tests/Quiz.Checks/Runtime.cs", "region": "Q42-types"}, {"path": "tests/Quiz.Checks/Runtime.cs", "region": "Q42-call"}],
+    "options": {
+      "A": "(9, 3, 7)：装箱和普通解箱赋值各产生一份值复制。",
+      "B": "(9, 9, 7)：object 始终指向 original 变量的最新值。",
+      "C": "(7, 7, 7)：解箱赋值使三个变量共享可写存储。",
+      "D": "(9, 7, 7)：解箱出的普通变量是箱内值的可写别名。"
+    },
+    "answers": ["A"],
+    "rationale": {
+      "A": "box 保存 X=3 的独立值；改 original 得到 9；普通强制转换再复制箱内值，随后只改 unboxed 得到 7。",
+      "B": "装箱保存当时的值，并不保存指向原局部变量的托管引用。",
+      "C": "这里没有 ref 别名，三份值的写入相互独立。",
+      "D": "普通 C# 解箱赋值把值复制到变量；它不会把 unboxed 变成箱内存储的别名。"
+    },
+    "takeaway": "把值交给 object API 同时改变分配和复制边界；修改原值不会更新已经装箱的快照。",
+    "learn": ["docs/10-performance.md", "docs/13-memory.md"],
+    "sources": [{"title": "Boxing and Unboxing", "url": "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/types/boxing-and-unboxing"}],
+    "verification": {"kind": "runtime", "checks": ["Q42"], "note": "运行核对三份值的完整返回结果；不把此例外推到 Unsafe 等显式获取箱内 ref 的 API。"},
+    "explanation": {
+      "principle": "装箱会建立包含结构体值副本的对象；拆箱到普通局部变量又得到一个值副本，三份存储不会相互同步。",
+      "steps": [
+        "装箱时 original.X 为 3，随后把原变量改成 9，箱内仍为 3。",
+        "从箱中取出的副本改成 7，只修改该局部变量，因此三个读数为 9、3、7。"
+      ],
+      "boundary": "通过引用直接访问箱内值是另一种操作；本题的普通拆箱赋值没有取得这种引用。"
+    }
+  },
+  {
+    "id": "Q43",
+    "title": "接口参数与受约束的泛型调用",
+    "kind": "single",
+    "tier": "deep",
+    "topics": ["接口装箱", "constrained 调用", "ref 泛型参数"],
+    "scenario": "",
+    "prompt": "InterfaceAndGeneric() 返回什么？哪项解释准确说明接口变量与 ref 泛型参数各自修改了哪份值？",
+    "code": [{"path": "tests/Quiz.Checks/Runtime.cs", "region": "Q43-types"}, {"path": "tests/Quiz.Checks/Runtime.cs", "region": "Q43-call"}],
+    "options": {
+      "A": "(3, 3)：接口变量和 ref 泛型参数都引用原始 counter。",
+      "B": "(0, 2)：泛型方法调用接口成员时仍必须装箱，所以原值不变。",
+      "C": "(1, 2)：接口变量操作箱内副本，ref 泛型调用操作原始 counter。",
+      "D": "(1, 0)：接口上的方法修改的是每次调用时产生的临时副本。"
+    },
+    "answers": ["C"],
+    "rationale": {
+      "A": "转换为 ICounter 时已复制并装箱；两个变量的存储不是同一份。",
+      "B": "本例 T 实现了调用的接口成员，受约束调用可以直接使用 struct 的地址，ref 又把原变量传入。泛型不意味着每次接口调用必装箱。",
+      "C": "两次 boxed.Increment 把箱内值改为 2；IncrementGeneric 则通过 ref 把原值改为 1。",
+      "D": "接口变量持续指向同一个箱；接口方法调用会修改这个箱中的 struct，并非每次复制一个新箱。"
+    },
+    "takeaway": "区分“转换成接口对象”和“用泛型约束调用接口成员”；ref 是否保留原变量与是否装箱是两个需要分别检查的边界。",
+    "learn": ["docs/05-generics.md", "docs/12-runtime.md", "docs/13-memory.md"],
+    "sources": [
+      {"title": "Boxing and Unboxing", "url": "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/types/boxing-and-unboxing"},
+      {"title": "OpCodes.Constrained remarks", "url": "https://learn.microsoft.com/en-us/dotnet/api/system.reflection.emit.opcodes.constrained?view=net-10.0"}
+    ],
+    "verification": {"kind": "runtime", "checks": ["Q43"], "note": "核对箱内值与原变量分别变化；constrained 的非装箱条件另按官方 IL 契约核对，不宣称任意泛型方法零分配。"},
+    "explanation": {
+      "principle": "把普通结构体转换为接口通常会装箱，接口调用修改箱内实例；带 struct 约束且按 ref 传入的泛型调用可以直接操作原变量。",
+      "steps": [
+        "接口变量持有初始为 0 的独立箱，调用两次 Increment 后箱内计数为 2。",
+        "泛型方法接收原 counter 的引用并递增一次，原变量变成 1，最终读到 1、2。"
+      ],
+      "boundary": "避免装箱与避免复制是两件事；若泛型参数改为按值传递，即使没有装箱，方法也可能只修改副本。"
+    }
+  },
+  {
+    "id": "Q44",
+    "title": "Span 与 ReadOnlySpan 的数据关系",
+    "kind": "single",
+    "tier": "core",
+    "topics": ["Span", "ReadOnlySpan", "别名"],
+    "scenario": "",
+    "prompt": "调用 SharedViews() 返回什么？",
+    "code": [{"path": "tests/Quiz.Checks/Runtime.cs", "region": "Q44"}],
+    "options": {
+      "A": "(20, 30)：Span 切片与 ReadOnlySpan 转换都复制数据。",
+      "B": "(20, 7)：只有 ReadOnlySpan 转换会创建不可变快照。",
+      "C": "编译失败：存在 ReadOnlySpan 时，编译器禁止其他别名写入数组。",
+      "D": "(99, 7)：两个 Span 都是同一底层数组的视图。"
+    },
+    "answers": ["D"],
+    "rationale": {
+      "A": "切片保留底层存储引用及区间，不自动复制元素。",
+      "B": "ReadOnlySpan 限制通过这个视图写入，不冻结底层内存，也不创建快照。",
+      "C": "C# 不使用这种全局独占借用规则。只读视图仍可能与可写数组或 Span 共享存储。",
+      "D": "middle[0] 对应 data[1]，middle[1] 对应 data[2]；readOnly 看到同一内存中的新值。"
+    },
+    "takeaway": "零复制视图要求明确缓冲区所有权与修改时机；只读 API 和不可变数据是不同承诺。",
+    "learn": ["docs/10-performance.md"],
+    "sources": [{"title": "Memory<T> and Span<T> usage guidelines", "url": "https://learn.microsoft.com/en-us/dotnet/standard/memory-and-spans/memory-t-usage-guidelines"}],
+    "verification": {"kind": "runtime", "checks": ["Q44"], "note": "核对可写、只读视图和数组修改共享存储；不依赖内存地址或分配字节数。"},
+    "explanation": {
+      "principle": "Span<T> 是一段内存的视图，切片不会复制元素；ReadOnlySpan<T> 限制通过该视图写入，不会冻结底层存储。",
+      "steps": [
+        "middle 从数组下标 1 开始，因此 middle[0] 写 99 就是把 data[1] 改成 99。",
+        "readOnly 观察同一段内存；data[2] 改成 7 后，readOnly[0] 和 middle[1] 分别读到 99、7。"
+      ],
+      "boundary": "只读视图不等于不可变快照，也不提供并发同步；要隔离后续修改，需要按业务要求复制数据。"
+    }
+  },
+  {
+    "id": "Q45",
+    "title": "Span 与异步挂起",
+    "kind": "single",
+    "tier": "core",
+    "topics": ["ref 安全", "Span", "async 状态机"],
+    "scenario": "",
+    "prompt": "假定 data 长度至少为 4。以下代码在本仓库 C# 14 下不能编译；哪项正确指出根因，并给出保留异步等待的修复方向？",
+    "code": [{"path": "exercises/quiz/compile/Q45.cs", "region": "Q45"}],
+    "options": {
+      "A": "问题是可写视图；只把 header 改成 ReadOnlySpan<byte>，保持声明和读取位置不变即可。",
+      "B": "问题是 header 的值要跨 await 保留；可以保存 Memory 或数组，并在 await 后重新取得 Span。",
+      "C": "问题是 C# 14 完全禁止 async 方法中声明 Span；所有 Span 使用都必须搬到另一个同步方法。",
+      "D": "问题是数组可能被 GC 移动；在 await 后调用 GC.KeepAlive(data) 即可让原代码通过。"
+    },
+    "answers": ["B"],
+    "rationale": {
+      "A": "ReadOnlySpan 也是 ref struct，同样不能把该值跨 await 保存。这里的限制不是可写权限或底层恰好由数组支持。",
+      "B": "header 在 await 前取得并在其后使用，触发 CS4007。用可跨挂起保存的数组或 Memory 表达生命周期，再在同步区段建立视图。",
+      "C": "C# 13 起放宽了 async 中的 ref struct 局部使用；C# 14 可以在不跨 await 保存值的同步区段使用 Span。",
+      "D": "KeepAlive 不改变 ref struct 的编译期生命周期限制，也不会固定地址。GC 存活性不能替代异步状态的 ref 安全规则。"
+    },
+    "takeaway": "以挂起点为边界设计 Span 的生命周期；Memory 能跨异步边界，但其底层缓冲区仍需要正确的所有权管理。",
+    "learn": ["docs/10-performance.md", "docs/14-execution-model.md"],
+    "sources": [
+      {"title": "ref struct types", "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/ref-struct"},
+      {"title": "C# 13: ref locals in async methods", "url": "https://learn.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-13"}
+    ],
+    "verification": {"kind": "compile-error", "path": "exercises/quiz/compile/Q45.cs", "diagnostics": ["CS4007"], "note": "在 C# 14 / net10.0 下核对跨 await 使用 Span 的语言错误；不是 nullable 或仓库警告升级产生的失败。"},
+    "explanation": {
+      "principle": "Span<T> 是 ref struct，其引用不能被保存到跨 await 挂起的状态中。编译器按变量在挂起点前后的使用检查这一限制。",
+      "steps": [
+        "header 在 await 前创建，又在 await 后读取；它必须跨越可能的挂起点，所以产生 CS4007。",
+        "可以保留 byte[] 或 Memory<byte> 跨 await，在恢复后重新取得 Span；也可让 Span 的全部使用在 await 前结束。"
+      ],
+      "boundary": "C# 14 并非禁止在 async 方法中出现 Span；限制针对可能跨挂起点存活的使用方式。"
+    }
+  },
+  {
+    "id": "Q46",
+    "title": "池化缓冲区何时能归还",
+    "kind": "single",
+    "tier": "core",
+    "topics": ["Memory", "ArrayPool", "异步所有权"],
+    "scenario": "调用者从 ArrayPool<byte> 租借数组，把一段 ReadOnlyMemory<byte> 交给 SendAsync，已取得尚未完成的 Task。约定发送在 Task 到达成功、故障或取消终态后停止访问缓冲区。调用者保留所有权，期间不再写入借出的区段。",
+    "prompt": "调用者应把唯一一次 Return 安排在哪个位置，才能满足归还契约？",
+    "code": [],
+    "options": {
+      "A": "在 try 中 await 这个 Task，在对应 finally 中把数组归还给原池。",
+      "B": "紧接取得 Task 之后归还；传入 ReadOnlyMemory 已使发送拥有独立的字节副本。",
+      "C": "把数组引用存入发送状态对象后归还；强引用会阻止池把数组交给其他请求。",
+      "D": "CancellationTokenSource.Cancel() 返回后归还；无需等待发送 Task 到达终态。"
+    },
+    "answers": ["A"],
+    "rationale": {
+      "A": "直接 await 该 Task 会等到题目约定的消费终态；finally 在成功、故障和取消路径上统一归还。每次租借只能向原池归还一次。",
+      "B": "ReadOnlyMemory 是视图，没有复制字节。提前归还允许池复用同一数组，发送可能读到其他请求写入的数据。",
+      "C": "强引用影响 GC 可达性，不保留池的使用权。Return 后即使对象仍然存在，原租借方也不能继续使用它。",
+      "D": "Cancel 只发出取消请求，不证明发送已停止读取。必须等到消费契约给出的终态，才能归还。"
+    },
+    "takeaway": "异步缓冲区的正确性依赖租约结束协议；GC、只读视图和取消请求都不能代替所有权管理。",
+    "learn": ["docs/04-resources.md", "docs/08-async.md", "docs/10-performance.md"],
+    "sources": [
+      {"title": "Memory<T> usage guidelines: ownership and leases", "url": "https://learn.microsoft.com/en-us/dotnet/standard/memory-and-spans/memory-t-usage-guidelines"},
+      {"title": "ArrayPool<T>.Return ownership contract", "url": "https://learn.microsoft.com/en-us/dotnet/api/system.buffers.arraypool-1.return?view=net-10.0"}
+    ],
+    "verification": {"kind": "documentation", "note": "按 Task 终态租约与 ArrayPool.Return 契约核对四个归还位置，只有 A 等到消费结束；不依赖池复用时机或 GC 实验。"},
+    "explanation": {
+      "principle": "数组池租借的是一段有使用期限的存储。Return 表示消费者已经彻底停止访问，池随后可以把同一数组交给其他调用方。",
+      "steps": [
+        "异步消费者仍在读取时归还，即使传的是只读视图，也可能被下一位租借者覆盖。",
+        "等待消费者 Task 到达成功、故障或取消的终态后，再在 finally 中向原池归还一次，才结束本次租期。"
+      ],
+      "boundary": "发送取消请求不代表消费者已经结束；数组是否仍可访问要由操作的完成契约决定，不能依赖 GC 或引用还存在。"
+    }
+  },
+  {
+    "id": "Q47",
+    "title": "GC 没有释放业务已结束的对象",
+    "kind": "single",
+    "tier": "core",
+    "topics": ["GC 根", "保留链", "内存诊断"],
+    "scenario": "请求处理结束且局部变量已离开方法，但内存转储显示：静态字典 → RequestState → 大数组。字典本意是保存正在处理的请求，却从未删除已完成项。",
+    "prompt": "哪个诊断和修复方向最准确？",
+    "code": [],
+    "options": {
+      "A": "GC 不会分析字典内部引用；给 RequestState 添加终结器即可让数组回收。",
+      "B": "存在引用环时 C# 的 GC 就无法回收；把 RequestState 改成 struct 即可修复。",
+      "C": "让处理方法的局部变量设为 null，然后在每个请求后调用 GC.Collect()。",
+      "D": "静态字典构成强保留链；按业务生命周期移除条目，并检查是否还有其他根。"
+    },
+    "answers": ["D"],
+    "rationale": {
+      "A": "GC 会沿引用图追踪字典内容。仍可达对象不会因为添加终结器就提前清理。",
+      "B": "追踪式 GC 可以处理不可达的引用环；当前问题是来自静态根的可达路径，不是值类型与引用类型的选择。",
+      "C": "局部变量变化不会切断静态字典的引用；强制收集不能释放仍然可达的数组。",
+      "D": "业务不再需要和 GC 不再可达是两件事。修正字典生命周期可以消除这条保留路径，其他路径需继续通过转储核对。"
+    },
+    "takeaway": "排查托管内存保留时从根到对象找路径；不要用 GC.Collect 或终结器修补对象图中的生命周期错误。",
+    "learn": ["docs/13-memory.md", "docs/04-resources.md"],
+    "sources": [{"title": "Fundamentals of garbage collection: roots and reachability", "url": "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/fundamentals"}],
+    "verification": {"kind": "documentation", "note": "逐项核对根可达性和终结/收集边界；题目给出转储路径，不通过实际 GC 时机推断是否存在保留链。"},
+    "explanation": {
+      "principle": "GC 判断对象能否回收看的是强引用可达性，而不是业务上是否还需要它。静态字段会在其有效生命周期内保持引用链。",
+      "steps": [
+        "静态字典持有条目，条目又持有对象；即使请求已结束，这条从 GC 根出发的引用链仍然存在。",
+        "需要按业务生命周期移除条目，并检查其他强引用；强制 GC 不会回收仍可达的对象。"
+      ],
+      "boundary": "内存增长也可能来自正常缓存或其他根；应先定位保留链，再判断该引用是否需要长期存在。"
+    }
+  },
+  {
+    "id": "Q48",
+    "title": "弱引用缓存的命中与使用",
+    "kind": "single",
+    "tier": "deep",
+    "topics": ["WeakReference", "缓存", "强引用生命周期"],
+    "scenario": "一个可重新计算的只读索引使用 WeakReference<Index> 缓存。本次 TryGetTarget(out var index) 返回 true，接下来要用索引处理请求；其他代码不会主动替换弱引用的目标。",
+    "prompt": "哪项能作为本次托管读取的正确依据？",
+    "code": [],
+    "options": {
+      "A": "只需保存这次返回的 true；丢弃 index 后，再取目标也可以按必然命中处理。",
+      "B": "只要对 WeakReference 对象加锁，就可丢弃 index；这把锁会阻止 GC 回收目标。",
+      "C": "直接使用此次取得的 index 完成读取；这份强引用提供当前消费所需的可达性。",
+      "D": "使用 index 完成本次读取后，目标会在最后一次使用的语句结束时立即回收。"
+    },
+    "answers": ["C"],
+    "rationale": {
+      "A": "布尔结果不是目标的强引用。两次获取之间可能发生回收，后一次 TryGetTarget 仍须处理 false，不能沿用旧命中状态。",
+      "B": "锁协调遵守同一锁的代码，不把弱引用关系变成强引用。锁住 WeakReference 容器不能替目标保活。",
+      "C": "TryGetTarget 成功时取得目标对象的强引用。使用同一次取得的 index，避免了丢弃它后再获取的生命周期窗口。",
+      "D": "失去强可达性只允许后续回收，不规定发生时间；对象也可能还有其他强引用。弱引用缓存必须有未命中路径。"
+    },
+    "takeaway": "弱引用是一种允许缓存失效的生命周期选择；它不提供确定回收、资源释放或并发缓存构建的完整协议。",
+    "learn": ["docs/13-memory.md"],
+    "sources": [
+      {"title": "WeakReference<T>.TryGetTarget", "url": "https://learn.microsoft.com/en-us/dotnet/api/system.weakreference-1.trygettarget?view=net-10.0"},
+      {"title": "Weak References", "url": "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/weak-references"},
+      {"title": "Fundamentals of garbage collection", "url": "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/fundamentals"}
+    ],
+    "verification": {"kind": "documentation", "note": "核对 TryGetTarget 成功取得强引用与弱引用不保活的契约，C 为唯一正确依据；不以强制 GC 后恰好存活或死亡证明确定时机。"},
+    "explanation": {
+      "principle": "WeakReference<T> 允许目标被回收。TryGetTarget 成功时得到的局部强引用，才是这一轮使用目标的可靠句柄。",
+      "steps": [
+        "第一次成功取出 index 后，应直接通过该局部变量完成需要的操作。",
+        "若丢弃结果再重新查询，两次查询之间目标可能消失，不能把第一次成功当作第二次成功的承诺。"
+      ],
+      "boundary": "弱引用缓存必须允许未命中并重新建立目标；它既不保证缓存永久存在，也不自动解决并发创建和共享状态问题。"
+    }
+  },
+  {
+    "id": "Q49",
+    "title": "对象存活与地址固定",
+    "kind": "single",
+    "tier": "deep",
+    "topics": ["GC.KeepAlive", "pinning", "互操作生命周期"],
+    "scenario": "同步原生函数只在调用期间使用传入的托管 byte[] 数据地址。代码审查建议用 GC.KeepAlive(array) 代替包住原生调用的 fixed，以免 GC 移动数组。",
+    "prompt": "哪个判断正确？假定原生函数返回后不会再保存或使用指针。",
+    "code": [],
+    "options": {
+      "A": "可以替代；只要对象仍然活着，压缩 GC 就不会移动它。",
+      "B": "把数组设为 static 就等同于固定地址。",
+      "C": "不能替代；KeepAlive 延长存活性，fixed 在其作用域内防止移动，两者解决不同问题。",
+      "D": "fixed 结束后数组会一直固定到它被回收，因此原生函数以后保存指针也安全。"
+    },
+    "answers": ["C"],
+    "rationale": {
+      "A": "GC 可以移动仍然存活的普通对象并更新托管引用；保持可达不等于保持原生地址稳定。",
+      "B": "静态引用是强根，但不是固定句柄，不能使对象免于移动。",
+      "C": "KeepAlive 保证对象至少活到调用点；fixed 的固定保证覆盖其语句体。题目中的同步原生访问应处于适当的固定作用域内。",
+      "D": "离开 fixed 后固定保证结束。原生端若保存指针，必须另外设计覆盖实际访问期的固定与所有权协议。"
+    },
+    "takeaway": "互操作评审分开检查对象存活、地址稳定和原生访问期；不能用其中一个替代另外两个。",
+    "learn": ["docs/13-memory.md"],
+    "sources": [
+      {"title": "GC.KeepAlive", "url": "https://learn.microsoft.com/en-us/dotnet/api/system.gc.keepalive?view=net-10.0"},
+      {"title": "fixed statement", "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/fixed"}
+    ],
+    "verification": {"kind": "documentation", "note": "核对存活保证与固定作用域；避免依靠某次 GC 是否移动数组、实际地址或不安全崩溃来验证。"},
+    "explanation": {
+      "principle": "GC.KeepAlive 延长对象的可达性，fixed 则在代码块内固定可移动对象的地址。这是对象寿命与地址稳定性两个不同要求。",
+      "steps": [
+        "原生代码同步使用托管数组地址时，需要在固定期间调用，让 GC 不会在使用中移动数组。",
+        "KeepAlive 可保证托管对象活到某处，却不能单独让此前取得的裸指针一直有效。"
+      ],
+      "boundary": "若原生方在调用返回后继续保存指针，短暂的 fixed 不够；需设计覆盖整个使用期的固定、复制或原生内存所有权。"
+    }
+  },
+  {
+    "id": "Q50",
+    "title": "大缓冲区和分代 GC 的排障判断",
+    "kind": "single",
+    "tier": "deep",
+    "topics": ["分代 GC", "LOH", "分配压力"],
+    "scenario": "服务反复分配临时大数组，已确认这些数组进入 LOH；监控出现更多完整 GC 和较高停顿。团队正在 .NET 10 常规分代 GC 下评估缓冲区复用。",
+    "prompt": "为什么这次调查应关注第 2 代收集，而不能只观察第 0 代？",
+    "code": [],
+    "options": {
+      "A": "这些数组也必须先在第 0 代存活两次，才会进入 LOH 并影响第 2 代收集。",
+      "B": "LOH 随第 2 代一起收集，大量临时大数组也可能增加完整收集压力。",
+      "C": "第 2 代收集次数专门记录 LOH 压缩，增长就能证明大数组造成了碎片。",
+      "D": "LOH 按固定周期独立回收；第 2 代指标只反映小对象，与这些大数组无关。"
+    },
+    "answers": ["B"],
+    "rationale": {
+      "A": "大对象可直接分配到 LOH，无须先经过小对象从第 0 代逐步提升的路径；临时对象也能影响完整收集。",
+      "B": "第 2 代收集覆盖 LOH。应结合大对象分配速率、存活量和收集原因评估复用，不能仅因对象短命就只测第 0 代。",
+      "C": "收集次数不是压缩次数，也不能单独证明碎片。LOH 通常采用清扫，但可在相应配置或请求下压缩。",
+      "D": "LOH 没有这个独立定时回收保证。它仍受 GC 可达性分析和第 2 代收集管理，不能据此预测某个数组的回收时刻。"
+    },
+    "takeaway": "用分配速率、存活量和收集代次定位压力；GC 的策略模型用于诊断，不用于保证回收时刻。",
+    "learn": ["docs/13-memory.md", "docs/10-performance.md"],
+    "sources": [
+      {"title": "Fundamentals of garbage collection", "url": "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/fundamentals"},
+      {"title": "Large object heap", "url": "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/large-object-heap"}
+    ],
+    "verification": {"kind": "documentation", "note": "核对 LOH 与第 2 代收集的关系，只有 B 正确解释调查代次；解析另核对压缩边界，不承诺特定分配触发收集或固定停顿。"},
+    "explanation": {
+      "principle": "大对象堆与第 2 代回收关联；对象业务寿命很短，也不意味着它会按普通小对象的第 0 代路径回收。",
+      "steps": [
+        "反复分配大数组会增加大对象堆的分配压力，短期不用的数组仍需要等待相应回收时机。",
+        "应结合分配速率、存活量和实际 GC 事件判断影响，不能只看对象使用时间来断言回收成本。"
+      ],
+      "boundary": "代际是运行时的管理机制；本题没有承诺每次大对象分配立即触发回收，也不能从一段代码预测精确触发次数。"
+    }
+  },
+  {
+    "id": "Q51",
+    "title": "累计分配计数不能回答什么",
+    "kind": "single",
+    "tier": "core",
+    "topics": ["分配测量", "存活内存", "性能证据"],
+    "scenario": "团队用同一线程上的两次分配计数之差评估同步热路径，运行前已预热。现在需要确定这个指标能说明什么。",
+    "prompt": "对 MeasureAllocation() 返回值，哪个解释正确？这里不要求任何固定字节数。",
+    "code": [{"path": "tests/Quiz.Checks/Runtime.cs", "region": "Q51"}],
+    "options": {
+      "A": "它记录区间内当前线程累计的托管分配；不是泄漏量，也不等于最终存活对象大小。",
+      "B": "它等于区间结束时整个进程仍然存活的托管内存。",
+      "C": "它包含原生库分配和其他线程的所有分配，因而适合直接跨 await 做差。",
+      "D": "区间内只要发生 GC，已经回收的对象会从累计值中扣除。"
+    },
+    "answers": ["A"],
+    "rationale": {
+      "A": "API 的计数范围是当前线程生存期内的累计托管分配，两次做差得到这段区间的增量。泄漏还需要对象保留与业务生命周期证据。",
+      "B": "计数不是进程堆存活快照，也不包含其他线程的累计分配。",
+      "C": "原生分配与其他线程分配不在此计数中；跨 await 可能换线程，会破坏同一计数域的前提。",
+      "D": "累计计数不因对象被回收而减少；它衡量分配活动而非当前持有量。"
+    },
+    "takeaway": "性能结论先明确指标、线程范围和测量边界；分配压力、存活内存、泄漏与执行时间应分别验证。",
+    "learn": ["docs/10-performance.md", "docs/13-memory.md"],
+    "sources": [{"title": "GC.GetAllocatedBytesForCurrentThread", "url": "https://learn.microsoft.com/en-us/dotnet/api/system.gc.getallocatedbytesforcurrentthread?view=net-10.0"}],
+    "verification": {"kind": "runtime", "checks": ["Q51"], "note": "预热后只核对返回数组造成正的分配增量，不固定字节数。计数范围、非存活量和不含原生分配由官方 API 契约逐项核对。"},
+    "explanation": {
+      "principle": "GetAllocatedBytesForCurrentThread 统计当前线程累计分配的托管字节，前后差值回答的是这段区间分配了多少，而非还活着多少。",
+      "steps": [
+        "前后两次读数包围 AllocateBuffer，差值计入该线程在区间内发生的分配。",
+        "KeepAlive 把数组寿命延到观察点，但不会把累计分配计数变成存活内存或泄漏检测指标。"
+      ],
+      "boundary": "测量要控制线程、预热和区间内其他工作；对象头与对齐等会影响字节数，不宜硬编码为数组长度。"
+    }
+  },
+  {
+    "id": "Q52",
+    "title": "泛型代码共享会合并静态状态吗",
+    "kind": "single",
+    "tier": "deep",
+    "topics": ["闭合泛型类型", "静态字段", "代码共享"],
+    "scenario": "",
+    "prompt": "GenericState() 返回什么？",
+    "code": [{"path": "tests/Quiz.Checks/Runtime.cs", "region": "Q52-types"}, {"path": "tests/Quiz.Checks/Runtime.cs", "region": "Q52-call"}],
+    "options": {
+      "A": "(0, 0, true)：string 和 object 都是引用类型，因此运行时抹掉类型参数。",
+      "B": "(7, 0, false)：两个闭合泛型类型有独立类型身份和静态字段。",
+      "C": "(7, 7, false)：类型身份保留，但静态字段属于泛型定义而被共享。",
+      "D": "结果取决于本次 JIT 是否为两个实例化生成不同机器码。"
+    },
+    "answers": ["B"],
+    "rationale": {
+      "A": ".NET 泛型保留运行时类型参数，typeof 可以区分两个闭合类型，不是类型擦除模型。",
+      "B": "Cache<string> 与 Cache<object> 的静态存储分开；潜在机器码共享不改变语言可观察的类型身份和字段语义。",
+      "C": "泛型类型静态字段按闭合类型分别保存，不是所有 T 共用一份。",
+      "D": "JIT 的实现选择必须保持类型和静态状态语义，不能让程序结果随代码共享策略变化。"
+    },
+    "takeaway": "把泛型类型身份、静态存储和机器码实例化分开理解；代码共享是一种实现策略，不是类型参数被抹除。",
+    "learn": ["docs/05-generics.md", "docs/12-runtime.md"],
+    "sources": [
+      {"title": "Generics in the runtime", "url": "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/generics-in-the-run-time"},
+      {"title": "static: closed generic type fields", "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/static"}
+    ],
+    "verification": {"kind": "runtime", "checks": ["Q52"], "note": "核对类型身份和独立静态字段；不检查机器码地址，也不宣称本次运行确实共享了某个方法实现。"},
+    "explanation": {
+      "principle": "不同封闭泛型类型具有独立的类型身份和静态字段。运行时可能共享某些机器码，但不共享这些类型的静态存储。",
+      "steps": [
+        "Cache<string>.Hits 设为 7，只改变 string 对应类型的静态字段，Cache<object>.Hits 仍为 0。",
+        "typeof 得到的是两个不同类型，所以类型比较为 false，结果为 7、0、false。"
+      ],
+      "boundary": "代码生成策略是实现层面的优化，不能据此推断泛型类型被擦除或所有类型实参共用一份静态状态。"
+    }
+  },
+  {
+    "id": "Q53",
+    "title": "首次调用慢意味着什么",
+    "kind": "single",
+    "tier": "deep",
+    "topics": ["IL", "元数据", "分层 JIT"],
+    "scenario": "普通 .NET 10 JIT 部署的服务首次调用较慢，持续运行后较快。团队要比较两个版本的性能；项目不是 Native AOT，但可能包含 ReadyToRun 代码。",
+    "prompt": "哪种测量设计正确考虑了运行时编译对结果的影响？",
+    "code": [],
+    "options": {
+      "A": "只测一次首次调用；C# 保证每个方法只编译一次，之后的执行性能不再变化。",
+      "B": "直接比较 IL 指令数；结合类型元数据即可算出本机执行耗时，无须运行负载。",
+      "C": "发现 ReadyToRun 代码就省略预热；这种发布形式消除了所有 JIT 与启动成本。",
+      "D": "分别测冷启动和预热后的代表性负载；分层编译可能改变实际执行的机器码。"
+    },
+    "answers": ["D"],
+    "rationale": {
+      "A": "C# 不保证每个方法恰好 JIT 一次。首次调用混入的启动成本也不能直接代表后续负载，执行时间并非常数。",
+      "B": "IL 描述指令，元数据描述类型与成员；两者不是耗时表。JIT 优化、机器架构和真实输入都会影响执行成本。",
+      "C": "ReadyToRun 可提供初始预编译代码，分层编译仍可用优化后的 JIT 代码替换它；初始化等其他启动成本也仍然存在。",
+      "D": "当前运行时可先用快速 JIT 或预编译代码，再生成优化代码，因此两类负载应分开测。预热方案仍需按实际负载设计，不能仅凭首次变快就把原因全部归给 JIT。"
+    },
+    "takeaway": "以 IL/元数据理解部署与类型，以运行时编译策略解释性能；基准测量要区分启动成本和实际工作负载。",
+    "learn": ["docs/12-runtime.md", "docs/10-performance.md"],
+    "sources": [
+      {"title": "Managed execution process", "url": "https://learn.microsoft.com/en-us/dotnet/standard/managed-execution-process"},
+      {"title": "Runtime compilation configuration", "url": "https://learn.microsoft.com/en-us/dotnet/core/runtime-config/compilation"}
+    ],
+    "verification": {"kind": "documentation", "note": "核对 IL/元数据职责、分层编译与 ReadyToRun 关系，D 是唯一未依赖错误运行时保证的测量设计；不使用旧 NGen/CAS 叙述或一次耗时作证明。"},
+    "explanation": {
+      "principle": "首次调用和稳定运行处于不同阶段：加载、初始化、JIT 及分层编译都可能影响观测，不能把一次冷启动耗时当作稳定成本。",
+      "steps": [
+        "首次计时可能包含建立运行条件的成本；后续调用可能使用已编译或进一步优化的代码。",
+        "应分别测量冷启动和预热后的稳态，再根据诊断证据判断瓶颈是否来自 JIT。"
+      ],
+      "boundary": "预热适用于稳态问题，却可能掩盖真实启动体验；也不能把所有首次变慢都归因于编译。"
+    }
+  },
+  {
+    "id": "Q54",
+    "title": "反射型插件系统能直接改成 Native AOT 吗",
+    "kind": "single",
+    "tier": "deep",
+    "topics": ["Native AOT", "裁剪", "反射", "动态加载"],
+    "scenario": "工具用 Assembly.LoadFile 载入发布时未知的 C# 插件 DLL，再按配置字符串反射创建类型。需求是发布后增加插件时不重新编译宿主；普通 dotnet run 已通过，团队准备把宿主改成 Native AOT。",
+    "prompt": "对现有插件加载边界，应作出哪项架构判断？",
+    "code": [],
+    "options": {
+      "A": "把 Assembly.LoadFile 改为 Assembly.Load 即可，其他插件加载方式和发布需求不变。",
+      "B": "给宿主补上裁剪保留注解即可，使它在发布后仍能加载任意未知插件 DLL。",
+      "C": "这种未知托管插件的动态加载不受 Native AOT 支持，需要调整插件边界或部署模型。",
+      "D": "在目标机器另装 .NET 运行时即可，Native AOT 宿主会自动为新插件启用 JIT。"
+    },
+    "answers": ["C"],
+    "rationale": {
+      "A": "限制针对运行时动态加载未知托管代码这一能力，不只是 LoadFile 这个方法名。替换加载 API 不能使设计兼容。",
+      "B": "裁剪注解可以表达已知类型需要保留哪些成员，不能预先编译发布时未知的插件，也不能给 Native AOT 增加动态加载能力。",
+      "C": "这是部署架构限制。可以选择支持动态插件的部署模式，或重新设计插件边界；已知且保留成员的反射并非一律禁止。修改后仍须检查分析警告并验证实际发布产物。",
+      "D": "Native AOT 在发布时生成本机代码，不会因为旁边安装了运行时就自动获得 JIT。普通 dotnet run 的成功也不能证明 AOT 兼容。"
+    },
+    "takeaway": "把反射、裁剪和动态加载作为部署契约评审；源码能运行与 AOT 发布可用是两种不同证据。",
+    "learn": ["docs/09-engineering.md", "docs/12-runtime.md"],
+    "sources": [
+      {"title": "Native AOT deployment limitations", "url": "https://learn.microsoft.com/en-us/dotnet/core/deploying/native-aot/"},
+      {"title": "Prepare libraries for trimming", "url": "https://learn.microsoft.com/en-us/dotnet/core/deploying/trimming/prepare-libraries-for-trimming"}
+    ],
+    "verification": {"kind": "documentation", "note": "逐项核对 Native AOT 动态加载限制、无 JIT 和裁剪注解的作用，C 为唯一正确架构结论；未实际发布完整 AOT 插件系统。"},
+    "explanation": {
+      "principle": "Native AOT 在发布时把已知代码编译为本机代码，不能依赖运行时再加载任意未知托管程序集并执行其新代码。",
+      "steps": [
+        "题设要求部署后发现未知插件并动态加载，这需要发布时不存在的托管代码执行能力。",
+        "应调整插件架构或部署策略；反射本身并非全部不可用，已知且保留所需元数据的反射可以支持。"
+      ],
+      "boundary": "是否支持具体 API 要检查 AOT 与裁剪诊断并验证实际发布产物；普通运行成功不等于 AOT 发布成功。"
+    }
+  },
+  {
+    "id": "Q55",
+    "title": "SDK、目标框架与部署依赖",
+    "kind": "single",
+    "tier": "core",
+    "topics": ["SDK", "TFM", "self-contained", "运行时依赖"],
+    "scenario": "仓库用 global.json 选择 .NET SDK，项目目标为 net10.0。生产机器不安装 SDK，部署团队正在选择框架依赖发布或自包含发布。",
+    "prompt": "哪个说明可以作为部署计划的依据？",
+    "code": [],
+    "options": {
+      "A": "global.json 除了选择构建 SDK，还指定生产机应用必须加载的运行时补丁版本。",
+      "B": "目标为 net10.0 就已确定自包含发布，因此生产机不必提供 .NET 运行时。",
+      "C": "只要生产机安装了兼容运行时，自包含发布与框架依赖发布的产物就没有区别。",
+      "D": "SDK 选择构建工具，TFM 选择目标 API；框架依赖部署借用已安装运行时，自包含部署携带运行时。"
+    },
+    "answers": ["D"],
+    "rationale": {
+      "A": "global.json 参与 SDK 选择，不指定已发布应用的运行时绑定。运行时选择与滚动策略由应用发布配置等规则控制。",
+      "B": "TFM 不是 SDK 补丁号。是否自包含由发布配置决定，不能仅从 net10.0 推导。",
+      "C": "发布产物仍有区别：框架依赖应用使用机器上兼容的运行时，自包含应用携带自身所需组件，维护更新方式也不同。",
+      "D": "三层职责分开后才能复现构建并设计部署。自包含仍需要满足操作系统与原生依赖要求，通常按目标平台发布。"
+    },
+    "takeaway": "排查“本机能跑、生产不能跑”时分别检查构建 SDK、目标框架、运行时及发布平台，不把它们混成一个版本号。",
+    "learn": ["docs/00-environment.md", "docs/09-engineering.md"],
+    "sources": [
+      {"title": "global.json overview", "url": "https://learn.microsoft.com/en-us/dotnet/core/tools/global-json"},
+      {"title": "Target frameworks", "url": "https://learn.microsoft.com/en-us/dotnet/standard/frameworks"},
+      {"title": ".NET application publishing overview", "url": "https://learn.microsoft.com/en-us/dotnet/core/deploying/"}
+    ],
+    "verification": {"kind": "documentation", "note": "核对 SDK 选择、TFM 和两种发布模式的职责；不承诺自包含产物能跨任意操作系统运行或不依赖任何原生组件。"},
+    "explanation": {
+      "principle": "SDK 提供构建工具，目标框架限定编译时 API 契约，部署方式决定目标机器如何获得运行时；这三个层次不能互相替代。",
+      "steps": [
+        "安装 SDK 不等于产物自动自包含；框架依赖部署仍需要目标机器具备兼容运行时。",
+        "自包含发布携带选定运行时，但仍受操作系统、架构和原生依赖等条件约束。"
+      ],
+      "boundary": "TFM 不是 CPU 或系统平台标识；发布目标与运行环境也需要匹配，不能仅凭编译通过保证任意机器可运行。"
+    }
+  },
+  {
+    "id": "Q56",
+    "title": "volatile 与并发递增",
+    "kind": "single",
+    "tier": "core",
+    "topics": ["volatile", "原子性", "Interlocked"],
+    "scenario": "多个工作线程共享同一个计数器，每次成功完成工作就调用 Increment；全部工作结束后再读取结果。",
+    "prompt": "下面实现是否能保证每次调用都计入结果？假定计数不溢出。",
+    "code": [{"path": "tests/Quiz.Checks/Runtime.cs", "region": "Q56"}],
+    "options": {
+      "A": "能，volatile 把 Value++ 整体变成原子读改写。",
+      "B": "能，int 的读取和写入各自原子，所以组合的 ++ 必然原子。",
+      "C": "不能；可把字段改成普通 int，并用 Interlocked.Increment(ref Value) 实现原子递增。",
+      "D": "不能；但只在最终读取时加 lock 就能补回丢失的更新。"
+    },
+    "answers": ["C"],
+    "rationale": {
+      "A": "volatile 提供特定的访问排序语义，不把读取、加一、写回合并为一次原子操作。",
+      "B": "两个线程可以各自读取同一个旧值，再分别写回相同的新值；单次读写原子不能组合出原子递增。",
+      "C": "Interlocked.Increment 对同一变量执行原子读改写，适合这个单字段计数不变量。其他访问仍需遵守同步设计。",
+      "D": "最终读取时的锁无法修复已经覆盖掉的增量；同步必须覆盖共享修改本身。"
+    },
+    "takeaway": "把可见性/排序、原子操作和跨字段不变量分开；单计数优先用 Interlocked，多步骤状态转换需要更完整的同步。",
+    "learn": ["docs/08-async.md", "docs/14-execution-model.md"],
+    "sources": [
+      {"title": "volatile keyword", "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/volatile"},
+      {"title": "Interlocked.Increment", "url": "https://learn.microsoft.com/en-us/dotnet/api/system.threading.interlocked.increment?view=net-10.0"}
+    ],
+    "verification": {"kind": "runtime", "checks": ["Q56"], "note": "并发运行正确的 Interlocked 改写，等待全部工作后核对总数；volatile 版本不保证正确的结论由原子性契约推导，不靠偶然复现丢计数。"},
+    "explanation": {
+      "principle": "volatile 约束单次读写的可见性和顺序，Value++ 却由读、加一、写三步组成，并不是一次不可分割操作。",
+      "steps": [
+        "两个线程可以读到相同旧值，各自加一后写回相同结果，导致一次增量丢失。",
+        "Interlocked.Increment 把该变量的递增作为原子操作完成，在题设无溢出的条件下保留每次增量。"
+      ],
+      "boundary": "一个变量的原子递增不能保护跨多个字段的业务不变量；复杂状态通常还需要共同的同步协议。"
+    }
+  },
+  {
+    "id": "Q57",
+    "title": "锁与多字段一致性",
+    "kind": "single",
+    "tier": "core",
+    "topics": ["lock", "跨字段不变量", "一致快照"],
+    "scenario": "账本用两个字段表示累计入账次数及版本号，初始都为 0；多个线程调用 DepositOne 和 Snapshot，所有访问均限于以下代码。",
+    "prompt": "假定不溢出，关于 Snapshot 的结果与修改方案，哪个判断正确？",
+    "code": [{"path": "tests/Quiz.Checks/Runtime.cs", "region": "Q57"}],
+    "options": {
+      "A": "当前 Snapshot 不会观察到 Balance 与 Version 不等；读写都在同一把锁下维护这个不变量。",
+      "B": "把两个字段分别改为 Interlocked.Increment 后，可以删除所有锁，仍保证任意 Snapshot 的两个值一致。",
+      "C": "Snapshot 自己加锁就足够，DepositOne 可以删除锁，因为只有读取需要一致性。",
+      "D": "Snapshot 每次新建一个 object 再 lock 也同样有效，因为锁住的是代码块本身。"
+    },
+    "answers": ["A"],
+    "rationale": {
+      "A": "同一 gate 使更新和快照互斥；更新的两步对遵守协议的读取方作为整体可见。",
+      "B": "分别原子更新两个字段仍存在中间状态；单字段原子性不提供成对快照事务。",
+      "C": "写入若不遵守同一个锁，读取方持锁也不能阻止写入穿插在两次读取之间。",
+      "D": "互斥依赖相同锁对象。每次新建锁对象使各调用互不协调，代码块的位置相同没有帮助。"
+    },
+    "takeaway": "先写清共享状态的不变量，再让所有相关读写遵守同一同步协议；不能把多个原子字段自动当成事务。",
+    "learn": ["docs/08-async.md", "docs/14-execution-model.md"],
+    "sources": [{"title": "The lock statement", "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/lock"}],
+    "verification": {"kind": "runtime", "checks": ["Q57"], "note": "并发执行完整更新和快照，逐次核对字段一致并核对最终总数；普遍保证来自同锁互斥契约，不是把测试未撞到竞态当作证明。"},
+    "explanation": {
+      "principle": "锁保护的是参与同一锁协议的整个临界区，因而可以把多个字段的更新和读取组织成一致的事务边界。",
+      "steps": [
+        "DepositOne 在同一个 gate 内同时递增 balance 和 version，中间状态不对持锁的 Snapshot 可见。",
+        "Snapshot 也持有 gate，读取的是某次完整更新前或后的状态，因此题设下 balance 始终等于 version。"
+      ],
+      "boundary": "绕过该锁读取或修改字段会破坏保证；单个整数读写的原子性无法替代这项跨字段约束。"
+    }
+  },
+  {
+    "id": "Q58",
+    "title": "并发字典保证工厂只执行一次吗",
+    "kind": "single",
+    "tier": "core",
+    "topics": ["ConcurrentDictionary", "GetOrAdd", "副作用"],
+    "scenario": "两个线程同时对空 ConcurrentDictionary<string, object> 的同一键调用 GetOrAdd(key, factory)。用阶段信号确保两个 factory 都已进入，才让它们分别返回各自 new object()；过程中没有删除或其他写入。",
+    "prompt": "在这个受控交错下，哪项描述正确？",
+    "code": [],
+    "options": {
+      "A": "这个前提不可能发生，GetOrAdd 会在字典内部锁下串行执行 factory。",
+      "B": "factory 共运行两次，但只存入一个值；两个 GetOrAdd 调用返回同一个获胜对象。",
+      "C": "factory 共运行两次，字典会为同一个键保留两个不同的对象。",
+      "D": "只存入一个值，但两个 GetOrAdd 一定分别返回各自工厂创建的对象。"
+    },
+    "answers": ["B"],
+    "rationale": {
+      "A": "GetOrAdd 的用户工厂在内部锁之外执行，允许并发重复计算。",
+      "B": "两次工厂调用各自构造候选值，只有一个成功成为该键的值；没有后续移除或替换时，两次调用都返回该值。",
+      "C": "线程安全字典仍保持键唯一性，重复运行工厂不意味着重复存储键。",
+      "D": "工厂生成的候选值可能输掉竞争，GetOrAdd 返回字典中获胜的值，而非保证返回自己的候选值。"
+    },
+    "takeaway": "不要把付款、创建外部资源等不可重复副作用直接当作 GetOrAdd 工厂的“一次性”工作；缓存原子插入与一次性执行需要分别设计。",
+    "learn": ["docs/05-generics.md", "docs/08-async.md"],
+    "sources": [{"title": "ConcurrentDictionary<TKey,TValue>.GetOrAdd remarks", "url": "https://learn.microsoft.com/en-us/dotnet/api/system.collections.concurrent.concurrentdictionary-2.getoradd?view=net-10.0"}],
+    "verification": {"kind": "runtime", "checks": ["Q58"], "note": "用阶段信号强制两个工厂均进入后才放行，核对调用次数、键数和引用身份；没有以睡眠、耗时或碰巧发生的竞争构造证据。"},
+    "explanation": {
+      "principle": "ConcurrentDictionary 保证字典操作的并发安全，但 GetOrAdd 的工厂委托可在内部锁之外运行，可能为同一个键执行多次。",
+      "steps": [
+        "题设刻意让两个调用都进入工厂，因此工厂执行两次；竞争提交时只有一个值被加入字典。",
+        "在无删除等额外操作的条件下，两次调用都返回最终获胜的值，不能把工厂执行次数等同于插入次数。"
+      ],
+      "boundary": "有外部副作用的工厂需要另行设计去重或执行一次的协议；仅使用并发字典不足以保证副作用只发生一次。"
+    }
+  },
+  {
+    "id": "Q59",
+    "title": "ConfigureAwait(false) 会丢失请求上下文吗",
+    "kind": "single",
+    "tier": "deep",
+    "topics": ["AsyncLocal", "ExecutionContext", "ConfigureAwait"],
+    "scenario": "",
+    "prompt": "调用 AmbientFlow() 返回什么？代码未调用 ExecutionContext.SuppressFlow，也没有其他代码改变关联 ID；不依据线程编号或原线程是否被复用判断。",
+    "code": [{"path": "tests/Quiz.Checks/Runtime.cs", "region": "Q59"}],
+    "options": {
+      "A": "(null, null)：ConfigureAwait(false) 禁止所有上下文传播。",
+      "B": "(null, \"request-7\")：Task.Run 只传播线程局部数据，不传播 AsyncLocal。",
+      "C": "结果取决于 Task.Run 是否碰巧使用设置 ID 的线程。",
+      "D": "(\"request-7\", \"request-7\")：AsyncLocal 随 ExecutionContext 流动，ConfigureAwait(false) 不负责关闭它。"
+    },
+    "answers": ["D"],
+    "rationale": {
+      "A": "ConfigureAwait(false) 针对等待恢复时的上下文/调度器捕获，不等于禁止 ExecutionContext 流动。",
+      "B": "常规 Task.Run 会捕获并传播 ExecutionContext；AsyncLocal 正是用于这样的逻辑异步调用流。",
+      "C": "这是逻辑执行上下文的值，不能用物理线程是否相同来判断。ThreadLocal 才按物理线程保存值。",
+      "D": "Task.Run 和 await 保持此处的逻辑上下文，两个读取都得到 request-7。题目排除了显式禁止流动的情况。"
+    },
+    "takeaway": "结合 Q38 区分 SynchronizationContext 的恢复位置与 ExecutionContext 的环境数据传播；AsyncLocal 也不会自动深复制其中保存的可变对象。",
+    "learn": ["docs/08-async.md", "docs/14-execution-model.md"],
+    "sources": [
+      {"title": "AsyncLocal<T>", "url": "https://learn.microsoft.com/en-us/dotnet/api/system.threading.asynclocal-1?view=net-10.0"},
+      {"title": "ConfigureAwait FAQ: AsyncLocal and ExecutionContext", "url": "https://devblogs.microsoft.com/dotnet/configureawait-faq/"}
+    ],
+    "verification": {"kind": "runtime", "checks": ["Q59"], "note": "核对常规 Task.Run、实际 Task.Yield 挂起和 ConfigureAwait(false) 后的数据值；不检查线程身份，也不声称所有自定义调度或 SuppressFlow 场景相同。"},
+    "explanation": {
+      "principle": "AsyncLocal 的逻辑环境通常随 ExecutionContext 流动；ConfigureAwait(false) 控制 await 的调度上下文捕获，是另一层机制。",
+      "steps": [
+        "父操作设置 request-7 后，Task.Run 捕获执行环境，子操作在 await 后仍能读取该值。",
+        "外层 ConfigureAwait(false) 不清除这份逻辑数据，因此子操作和父操作都读到 request-7。"
+      ],
+      "boundary": "题设没有抑制环境流动；若存的是可变对象引用，这种流动也不是深复制或并发隔离。"
+    }
+  },
+  {
+    "id": "Q60",
+    "title": "in 参数与结构体成员调用",
+    "kind": "single",
+    "tier": "deep",
+    "topics": ["in 参数", "readonly", "防御性复制"],
+    "scenario": "",
+    "prompt": "ReadonlyCopies() 返回什么？",
+    "code": [{"path": "tests/Quiz.Checks/Runtime.cs", "region": "Q60-types"}, {"path": "tests/Quiz.Checks/Runtime.cs", "region": "Q60-call"}],
+    "options": {
+      "A": "(1, 1, 0)：两次非 readonly 成员调用分别作用于防御性副本，原值未改变。",
+      "B": "(1, 2, 2)：in 等同于可写 ref，两次调用直接修改原变量。",
+      "C": "(1, 2, 0)：进入 Probe 时只复制一次，此后所有调用共享这个副本。",
+      "D": "编译失败：只读引用上不能调用任何没有 readonly 标记的 struct 方法。"
+    },
+    "answers": ["A"],
+    "rationale": {
+      "A": "in 提供只读引用，调用可能修改 this 的成员时编译器保护原值，分别复制后调用，因此每次都从 Position=0 开始。",
+      "B": "in 不允许通过该引用修改原 struct；它不是 ref 的性能同义词。",
+      "C": "本例两个成员调用各需要自己的防御性副本，不是把 in 参数悄悄降成单次按值参数。",
+      "D": "语言允许这样的调用，但通过副本保持只读语义。这个可编译行为正是性能与可变状态陷阱。"
+    },
+    "takeaway": "优化大型值传参前先设计只读成员或 readonly struct；需要修改状态时明确用 ref，并测量真实复制成本。",
+    "learn": ["docs/02-values.md", "docs/10-performance.md"],
+    "sources": [
+      {"title": "Method parameters: in modifier", "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/method-parameters"},
+      {"title": "Structure types: readonly instance members", "url": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/struct"}
+    ],
+    "verification": {"kind": "runtime", "checks": ["Q60"], "note": "核对两次返回值及调用者最终字段，验证只读引用上的可观察复制语义；不根据源码断言 JIT 最终一定执行几条物理拷贝指令。"},
+    "explanation": {
+      "principle": "in 参数提供只读引用；调用可能修改结构体的实例方法时，编译器通过防御性副本保持原值不变。",
+      "steps": [
+        "两次 Advance 各自在一个从原 Position=0 取得的副本上执行，都返回 1。",
+        "副本的变化不写回原 cursor，因此最终观测为 1、1、0，而不是连续递增。"
+      ],
+      "boundary": "in 不保证所有调用都零复制；可真正只读的成员应按只读语义设计，避免为可变方法付出副本成本。"
+    }
+  }
+]

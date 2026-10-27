@@ -1,0 +1,22 @@
+.team-user-bar, .team-save-status { padding: 12px max(24px, calc((100vw - 1180px) / 2)); display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+.team-user-bar { border-bottom: 1px solid #dfe4df; background: #fff; }
+.team-save-status { color: #08675d; font-size: 14px; }
+.team-save-status.save-failed { color: #8d2727; background: #fff2ed; }
+.team-auth { max-width: 520px; margin: 40px auto; background: white; padding: 32px; border: 1px solid #dfe4df; border-radius: 16px; }
+.team-auth form, .team-account-form { display: grid; gap: 18px; }
+.team-auth label, .team-account-form label { display: grid; gap: 8px; }
+.team-auth > button { margin-top: 20px; }
+.team-identity-note { color: #526a61; font-size: 14px; }
+.team-auth input, .team-account-form input, .team-filters select, .team-filters input { padding: 10px; border: 1px solid #becbc5; border-radius: 6px; font: inherit; min-width: 0; }
+.team-dashboard { max-width: 1180px; margin: 32px auto; padding: 0 24px 48px; }
+.team-filters { display: flex; flex-wrap: wrap; align-items: end; gap: 16px; margin: 20px 0; }
+.team-filters label { display: grid; gap: 6px; }
+.team-table-scroll { overflow-x: auto; }
+.team-table { width: 100%; border-collapse: collapse; background: white; font-size: 14px; margin: 16px 0 32px; }
+.team-table th, .team-table td { padding: 12px; text-align: left; border-bottom: 1px solid #dfe4df; white-space: nowrap; }
+.team-summary { padding: 20px; border: 1px solid #dfe4df; border-radius: 12px; background: white; margin-bottom: 16px; }
+.team-summary details { margin-top: 14px; }
+.team-summary summary { cursor: pointer; }
+.team-account-form { max-width: 480px; }
+.team-credentials { padding: 16px; background: #fff2da; white-space: pre-wrap; overflow-wrap: anywhere; }
+@media (max-width: 650px) { .team-auth { padding: 24px; margin: 16px; } .team-user-bar { gap: 10px; } }

@@ -1,0 +1,129 @@
+{
+  "group": "queries",
+  "title": "查询与元数据 · 形状、基数和执行边界",
+  "intro": "Q101–Q112 使用 LINQ to Objects；数据库提供程序可能有不同的翻译与执行限制。后半套区分表达式树、名称、反射与工具阶段，帮助判断元数据何时会变成实际行为。 表达式树示例使用 System.Linq.Expressions，特性读取使用 System.Reflection。",
+  "sections": [
+    {
+      "title": "投影、展平与位置配对",
+      "questions": [
+        "Q101",
+        "Q102",
+        "Q112"
+      ],
+      "code": [
+        {
+          "path": "tests/Quiz.Checks/Queries.cs",
+          "region": "Q102"
+        }
+      ],
+      "result": "Flatten() 返回 \"1,2,3\"。空批次贡献零项，结果不包含占位元素。",
+      "explanation": [
+        "Where 决定保留哪些输入，Select 决定每项输出什么。SelectMany 把每项产生的序列串联起来；它不是只取各批次首项，也不会把空集合当成 null。",
+        "Zip 按位置配对，在任一序列结束时停止。它不做键连接，也不验证等长；业务需要严格配对时应另外检查完整性。"
+      ],
+      "takeaway": "先画清输出是一项、嵌套序列还是展平序列，再选算子；输入形状与数量都要明确。"
+    },
+    {
+      "title": "排序与相等各有策略",
+      "questions": [
+        "Q103",
+        "Q104",
+        "Q107"
+      ],
+      "code": [
+        {
+          "path": "tests/Quiz.Checks/Queries.cs",
+          "region": "Q103"
+        }
+      ],
+      "result": "ThenBy 管线为 \"a1,a2,b1\"，第二个 OrderBy 管线为 \"a1,b1,a2\"。",
+      "explanation": [
+        "OrderBy 建立主排序，ThenBy 在已有主键内增加次键；另一个 OrderBy 建立新的主键。LINQ to Objects 的稳定排序保留同键输入的相对顺序，不等于所有先前优先级都仍有效。",
+        "GroupBy 与 Distinct 使用相等比较器。大小写标识需显式选择策略；GroupBy 的等价键组采用首个键，Distinct 的数量可由等价类确定，但本套不把它的输出次序当成排序承诺。"
+      ],
+      "takeaway": "排序比较器与相等比较器负责不同问题；跨管线保持一致的标识策略。"
+    },
+    {
+      "title": "连接与索引的基数约束",
+      "questions": [
+        "Q105",
+        "Q106",
+        "Q108"
+      ],
+      "code": [
+        {
+          "path": "tests/Quiz.Checks/Queries.cs",
+          "region": "Q106"
+        }
+      ],
+      "result": "GroupJoinRows() 返回 \"a:2,b:0\"，未匹配的 b 仍有空匹配组。",
+      "explanation": [
+        "Join 输出每个匹配对，未匹配外侧项被排除；重复键会增加组合数量。GroupJoin 则为每个外侧项提供整个匹配序列，即使它为空。它们不能当成只能返回一项的键查找。",
+        "ToDictionary 要求比较器下的键唯一，重复时抛出 ArgumentException，不像 Python 字典推导那样默认后者覆盖。需要合并、选首项或选末项时，规则必须明确。"
+      ],
+      "takeaway": "先确定一对一、一对多还是多对多，再决定用连接、分组或字典。"
+    },
+    {
+      "title": "存在性、唯一性与空输入",
+      "questions": [
+        "Q109",
+        "Q110",
+        "Q111"
+      ],
+      "code": [
+        {
+          "path": "tests/Quiz.Checks/Queries.cs",
+          "region": "Q111"
+        }
+      ],
+      "result": "EmptyAggregate() 返回 (10, true)。带种子版本返回 10，无种子版本拒绝空序列。",
+      "explanation": [
+        "First 选首项，Single 要求恰有一项；两个值相同的元素仍是两项。Any 表达存在性，可以在结果确定后停止枚举，不能用来保证所有项都执行副作用。",
+        "Aggregate 的种子定义累计起点，空输入可以直接返回种子；无种子版本需要首项作为初值。不要把不同聚合的空输入规则一律理解为零。"
+      ],
+      "takeaway": "在业务 API 中明确空输入、多项输入和默认值；让算子契约直接表达这些约束。"
+    },
+    {
+      "title": "代码结构与名称的编译阶段",
+      "questions": [
+        "Q113",
+        "Q114",
+        "Q115"
+      ],
+      "code": [
+        {
+          "path": "tests/Quiz.Checks/Queries.cs",
+          "region": "Q114"
+        }
+      ],
+      "result": "RebuildExpression() 返回 (3, -1)：新建减法根节点没有修改旧加法树。",
+      "explanation": [
+        "Expression<Func<...>> 保存支持的表达式结构，可检查节点或 Compile 为委托。节点不可变，转换构建新树并可复用旧子节点；这不同于任意可变 AST 的原地重写。",
+        "nameof 是编译期名称常量，不执行成员访问器。表达式树能够描述某段代码，也不代表 IQueryable 提供程序一定能翻译它；执行委托、生成树与翻译到外部查询是不同边界。"
+      ],
+      "takeaway": "需要执行行为用委托，需要检查结构用树；名称引用与运行时取值要分开。"
+    },
+    {
+      "title": "元数据消费者与工具阶段",
+      "questions": [
+        "Q116",
+        "Q117",
+        "Q118",
+        "Q119",
+        "Q120"
+      ],
+      "code": [
+        {
+          "path": "tests/Quiz.Checks/Queries.cs",
+          "region": "Q117"
+        }
+      ],
+      "result": "ReadAttribute() 返回 (0, 1, -1)：反射读取实例化特性，但自动属性没有因此得到校验。",
+      "explanation": [
+        "GetType 查看实际对象类型，typeof 查看指定类型。特性是元数据，必须有消费者读取并执行规则；反射读取可实例化特性，普通 MethodInfo.Invoke 的目标异常会被包装，诊断时需查看 InnerException。",
+        "本机互操作还要匹配 ABI、编码与所有权；C# string 的内部表示不能决定外部函数的 char* 编码。Roslyn 分析器诊断代码，源生成器追加源码，代码修复与重构负责编辑建议。Q119、Q120 人工核对官方契约，未执行本机或生成器实验。"
+      ],
+      "takeaway": "标注不等于执行；先确认是谁、在哪个阶段消费元数据，再讨论行为、兼容性和验证。"
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "source_revision": "229cd1390e7c1044939cf44bec7c846bf6d40d09",
+  "reviewed_revision": "e1b77b973d781b868e78b367bef7efba85c7715a",
+  "note": "2026-10-09 题面措辞修订：逐题核对题号、答案位置、代码、输入和验证分类不变；仅此精确版本对允许练习接续，考试不适用。",
+  "papers": [
+    {
+      "group": null,
+      "from": "df6838b9cfba5c9ff3849fa61fb407b05d45ad7941dbe0c3dc67dc44d60fbce3",
+      "to": "b29670f7cde6deda2227425d6277f45348a1e4e5fd06c9a47c1db3984696923b"
+    },
+    {
+      "group": "types",
+      "from": "2a577df9d9c1479a5f6e4b1b71ca9d8c8a62a9a2f4afc0e4142a132823517e8e",
+      "to": "91b228b0a01c704dca87d0e12e5f373f2e43ae790cd8ab48866eef27a6748880"
+    },
+    {
+      "group": "execution",
+      "from": "88de0678771650b6a3eb639572c0f666a8b43e29b9844e8a34d77aacee2f78b7",
+      "to": "8bda16b71117c8806a7692a4087a032a7b3d998e25a6e6d56cf3471f61ed415e"
+    },
+    {
+      "group": "runtime",
+      "from": "7c0344c9aa5caf8c479e0f6f04d6c528c7d370544e9306d5c227dd954525fcb2",
+      "to": "f9b6deaf497402c10013f4cf7b9d4ae616ae77942fcc02ebbb2cf4e3f739141c"
+    },
+    {
+      "group": "foundations",
+      "from": "ef3cfd25a187a1e06daa81b12b206bd250b5a6271b73bd3767d382c30457885f",
+      "to": "36451450d55ebe133c3237574f61acc7fcc6315cea326460731addc4eac54e00"
+    },
+    {
+      "group": "modeling",
+      "from": "f744c5f0757783980bc8f5a1d1f6140e4336744eeeded9ddc5bd1e1b228dda27",
+      "to": "e69d699c193ae570c8fcfe37e1dbeb0c7ac5f1f66ef16726ac515b35132e1877"
+    },
+    {
+      "group": "queries",
+      "from": "d57d3dfa043d250f2a3a7bf131b3abe16964e13403b600c8da6268bafdc060d8",
+      "to": "f3959f70dd9b045a2433c2150975ca1871de8c0c934de2d7c993d7f6d7c450d0"
+    },
+    {
+      "group": "microsoft",
+      "from": "d6d3f99e7df348551c22fd405d260650569b0e1cd7e448a3dbb32010fd21c80f",
+      "to": "94b3862c30f8888f2b9d650e7d4e31f104f0df9868ab6c0d6ff7845875ba53e6"
+    }
+  ]
+}

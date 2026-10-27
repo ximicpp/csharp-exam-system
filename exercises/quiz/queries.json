@@ -1,0 +1,1174 @@
+[
+  {
+    "id": "Q101",
+    "title": "LINQ 筛选与投影",
+    "kind": "single",
+    "tier": "core",
+    "topics": [
+      "LINQ",
+      "Where / Select"
+    ],
+    "scenario": "",
+    "prompt": "使用 LINQ to Objects。FilterProject() 返回什么？",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Queries.cs",
+        "region": "Q101"
+      }
+    ],
+    "options": {
+      "A": "\"20,30\"",
+      "B": "\"10,20,30\"",
+      "C": "\"2,3\"",
+      "D": "\"30,20\""
+    },
+    "answers": [
+      "A"
+    ],
+    "rationale": {
+      "A": "Where 保留 2、3，Select 各乘 10；枚举维持这里的源顺序。",
+      "B": "Where 排除了 1。",
+      "C": "Select 改变输出值，不只是过滤。",
+      "D": "这里没有排序或反转操作。"
+    },
+    "takeaway": "区分筛选与投影；延迟查询只有被枚举时才执行。",
+    "learn": [
+      "docs/07-linq.md"
+    ],
+    "sources": [
+      {
+        "title": "Enumerable.Where",
+        "url": "https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.where?view=net-10.0"
+      },
+      {
+        "title": "Enumerable.Select",
+        "url": "https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.select?view=net-10.0"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "checks": [
+        "Q101"
+      ],
+      "note": "断言给定样例的返回值或异常，并结合官方契约核对干扰项；不据此推广性能、跨平台 ABI 或其他输入。"
+    },
+    "explanation": {
+      "principle": "Where 决定哪些元素保留，Select 决定每个保留元素变成什么；LINQ to Objects 在枚举时执行这条管线。",
+      "steps": [
+        "依次检查 1、2、3，条件 x>=2 去掉 1，保留 2、3。",
+        "Select 再把两项乘 10，且没有排序步骤，Join 枚举得到 20,30。"
+      ],
+      "boundary": "创建查询不等于执行或保存结果；需要快照时应明确物化，不能依赖查询变量自动缓存。"
+    }
+  },
+  {
+    "id": "Q102",
+    "title": "SelectMany 与嵌套序列",
+    "kind": "single",
+    "tier": "core",
+    "topics": [
+      "LINQ",
+      "SelectMany"
+    ],
+    "scenario": "",
+    "prompt": "使用 LINQ to Objects。Flatten() 返回什么？",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Queries.cs",
+        "region": "Q102"
+      }
+    ],
+    "options": {
+      "A": "\"1,2,,3\"",
+      "B": "\"1,2,3\"",
+      "C": "\"1,3\"",
+      "D": "因空批次而抛出异常"
+    },
+    "answers": [
+      "B"
+    ],
+    "rationale": {
+      "A": "空批次不是占位字符串或额外元素。",
+      "B": "SelectMany 枚举各批次的元素；空批次贡献零个元素。",
+      "C": "第一个批次的两个元素都会保留。",
+      "D": "空集合合法；它不同于 null 集合。"
+    },
+    "takeaway": "Select 返回嵌套结果，SelectMany 展平一层；要保留批次信息时使用相应结果选择器。",
+    "learn": [
+      "docs/07-linq.md"
+    ],
+    "sources": [
+      {
+        "title": "Enumerable.SelectMany",
+        "url": "https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.selectmany?view=net-10.0"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "checks": [
+        "Q102"
+      ],
+      "note": "断言给定样例的返回值或异常，并结合官方契约核对干扰项；不据此推广性能、跨平台 ABI 或其他输入。"
+    },
+    "explanation": {
+      "principle": "SelectMany 对每个外层元素取得一个内层序列，再串接这些序列的元素；空序列贡献零项。",
+      "steps": [
+        "第一个批次产生 1、2，第二个批次没有元素，因此不会产生空占位项。",
+        "第三个批次产生 3，合并顺序为 1、2、3，字符串为 1,2,3。"
+      ],
+      "boundary": "空集合与 null 不同；若要保留批次身份，需要结果选择器或显式投影，普通展平会丢掉这一层结构。"
+    }
+  },
+  {
+    "id": "Q103",
+    "title": "ThenBy 与第二个 OrderBy",
+    "kind": "single",
+    "tier": "core",
+    "topics": [
+      "LINQ",
+      "排序"
+    ],
+    "scenario": "",
+    "prompt": "使用 LINQ to Objects。SortKeys() 返回什么？字符串使用 Ordinal 比较。",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Queries.cs",
+        "region": "Q103"
+      }
+    ],
+    "options": {
+      "A": "(\"a1,a2,b1\", \"a1,a2,b1\")",
+      "B": "(\"a1,b1,a2\", \"a1,a2,b1\")",
+      "C": "(\"a1,a2,b1\", \"a1,b1,a2\")",
+      "D": "第二个 OrderBy 会抛出异常"
+    },
+    "answers": [
+      "C"
+    ],
+    "rationale": {
+      "A": "第二个 OrderBy 不作为 ThenBy 使用。",
+      "B": "两条管线的主排序键不同，结果不能交换。",
+      "C": "ThenBy 添加次键；第二个 OrderBy 建立 Rank 为主键的新排序，同 Rank 时保留上一步的相对次序。",
+      "D": "IOrderedEnumerable 也是 IEnumerable，允许再调用 OrderBy。"
+    },
+    "takeaway": "多字段优先级用 OrderBy 后接 ThenBy；稳定排序并不等于主键不变。",
+    "learn": [
+      "docs/07-linq.md"
+    ],
+    "sources": [
+      {
+        "title": "Enumerable.OrderBy",
+        "url": "https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.orderby?view=net-10.0"
+      },
+      {
+        "title": "Enumerable.ThenBy",
+        "url": "https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.thenby?view=net-10.0"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "checks": [
+        "Q103"
+      ],
+      "note": "断言给定样例的返回值或异常，并结合官方契约核对干扰项；不据此推广性能、跨平台 ABI 或其他输入。"
+    },
+    "explanation": {
+      "principle": "ThenBy 在既定主键内增加次键；再次 OrderBy 则建立新的主排序。稳定性只规定相等新键之间保留先前相对顺序。",
+      "steps": [
+        "按 Name 再 ThenBy Rank 时，a 组内 1 在 2 前，b 最后，得到 a1,a2,b1。",
+        "再次 OrderBy Rank 以等级为主，等级 1 的 a1、b1 保留此前顺序，等级 2 最后，得到 a1,b1,a2。"
+      ],
+      "boundary": "这是 LINQ to Objects 的排序契约；远程提供程序的查询和排序稳定性需分别核对。"
+    }
+  },
+  {
+    "id": "Q104",
+    "title": "分组键的比较器",
+    "kind": "single",
+    "tier": "core",
+    "topics": [
+      "LINQ",
+      "GroupBy"
+    ],
+    "scenario": "",
+    "prompt": "使用 LINQ to Objects。GroupKeys() 返回什么？",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Queries.cs",
+        "region": "Q104"
+      }
+    ],
+    "options": {
+      "A": "(2, \"red\", 1)",
+      "B": "(1, \"RED\", 2)",
+      "C": "不能编译：GroupBy 不接受比较器",
+      "D": "(1, \"red\", 2)"
+    },
+    "answers": [
+      "D"
+    ],
+    "rationale": {
+      "A": "明确提供的比较器决定这里的键相等关系。",
+      "B": "合并组保留第一个等价键 red。",
+      "C": "相应 GroupBy 重载接受 IEqualityComparer。",
+      "D": "OrdinalIgnoreCase 使两个键相等，组键采用第一个遇到的等价键，元素数为 2。"
+    },
+    "takeaway": "标识的比较策略要贯穿分组、去重与字典；显示键的形式另行规范化。",
+    "learn": [
+      "docs/07-linq.md"
+    ],
+    "sources": [
+      {
+        "title": "Enumerable.GroupBy",
+        "url": "https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.groupby?view=net-10.0"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "checks": [
+        "Q104"
+      ],
+      "note": "断言给定样例的返回值或异常，并结合官方契约核对干扰项；不据此推广性能、跨平台 ABI 或其他输入。"
+    },
+    "explanation": {
+      "principle": "GroupBy 使用指定相等比较器划分等价类；键是否相等与显示哪种拼写是两个不同问题。",
+      "steps": [
+        "OrdinalIgnoreCase 认为 red 与 RED 相等，两项进入同一个组。",
+        "该组保留第一个遇到的等价键 red，含两项，因此返回 1、red、2。"
+      ],
+      "boundary": "比较器不会规范化显示文本；若输出要求统一大小写，应另外建立规范化策略。"
+    }
+  },
+  {
+    "id": "Q105",
+    "title": "内连接中的重复键",
+    "kind": "single",
+    "tier": "core",
+    "topics": [
+      "LINQ",
+      "Join"
+    ],
+    "scenario": "",
+    "prompt": "使用 LINQ to Objects。JoinRows() 返回什么？",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Queries.cs",
+        "region": "Q105"
+      }
+    ],
+    "options": {
+      "A": "\"1:10,1:20\"",
+      "B": "\"1:10\"",
+      "C": "\"1:10,2:0\"",
+      "D": "因右侧键重复而抛出异常"
+    },
+    "answers": [
+      "A"
+    ],
+    "rationale": {
+      "A": "Join 为匹配键生成所有配对；左侧 2 无匹配，不进入结果。",
+      "B": "两个右侧键 1 都会参与匹配。",
+      "C": "内连接不会替未匹配行生成默认值。",
+      "D": "重复连接键合法，不能套用字典唯一键约束。"
+    },
+    "takeaway": "确认键基数；一对多或多对多连接会增加输出量，不能当成单项字典查找。",
+    "learn": [
+      "docs/07-linq.md"
+    ],
+    "sources": [
+      {
+        "title": "Enumerable.Join",
+        "url": "https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.join?view=net-10.0"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "checks": [
+        "Q105"
+      ],
+      "note": "断言给定样例的返回值或异常，并结合官方契约核对干扰项；不据此推广性能、跨平台 ABI 或其他输入。"
+    },
+    "explanation": {
+      "principle": "Join 是按相等键生成所有匹配对的内连接，不是每个键只挑一个值的字典查询。",
+      "steps": [
+        "左侧 1 同时匹配右侧的 10 和 20，分别生成 1:10、1:20。",
+        "左侧 2 无匹配，右侧 3 也不能配对，输出只包含这两行。"
+      ],
+      "boundary": "重复键可使连接扩张为一对多或多对多；如果业务要求唯一，需提前验证键基数。"
+    }
+  },
+  {
+    "id": "Q106",
+    "title": "GroupJoin 与未匹配项",
+    "kind": "single",
+    "tier": "core",
+    "topics": [
+      "LINQ",
+      "GroupJoin"
+    ],
+    "scenario": "",
+    "prompt": "使用 LINQ to Objects。GroupJoinRows() 返回什么？",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Queries.cs",
+        "region": "Q106"
+      }
+    ],
+    "options": {
+      "A": "\"a:2\"",
+      "B": "\"a:2,b:0\"",
+      "C": "\"a:1,b:1\"",
+      "D": "因 b 无匹配而抛出异常"
+    },
+    "answers": [
+      "B"
+    ],
+    "rationale": {
+      "A": "没有匹配的外侧元素仍调用结果选择器。",
+      "B": "每个外侧元素得到一组匹配项；a 有两个，b 对应空组。",
+      "C": "匹配依据 Key，重复的 1 都属于 a，3 不属于 b。",
+      "D": "无匹配表示空序列而非错误。"
+    },
+    "takeaway": "GroupJoin 是按外侧元素生成匹配集合；进一步展平时要决定空组如何处理。",
+    "learn": [
+      "docs/07-linq.md"
+    ],
+    "sources": [
+      {
+        "title": "Enumerable.GroupJoin",
+        "url": "https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.groupjoin?view=net-10.0"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "checks": [
+        "Q106"
+      ],
+      "note": "断言给定样例的返回值或异常，并结合官方契约核对干扰项；不据此推广性能、跨平台 ABI 或其他输入。"
+    },
+    "explanation": {
+      "principle": "GroupJoin 为每个外侧元素产生一个匹配序列，并调用一次结果选择器；没有匹配时序列为空，外侧元素仍保留。",
+      "steps": [
+        "a 的键为 1，右侧两个 1 都匹配，Count 为 2。",
+        "b 的键为 2，没有匹配，Count 为 0，因此得到 a:2,b:0。"
+      ],
+      "boundary": "随后 SelectMany 展平空组会使该外侧行消失；要保留它需明确设计空组处理。"
+    }
+  },
+  {
+    "id": "Q107",
+    "title": "去重与相等比较器",
+    "kind": "single",
+    "tier": "core",
+    "topics": [
+      "LINQ",
+      "Distinct"
+    ],
+    "scenario": "",
+    "prompt": "使用 LINQ to Objects。DistinctKeys() 返回什么？只问数量，不依赖去重结果的次序。",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Queries.cs",
+        "region": "Q107"
+      }
+    ],
+    "options": {
+      "A": "3",
+      "B": "1",
+      "C": "2",
+      "D": "不能编译：Distinct 只能用默认比较器"
+    },
+    "answers": [
+      "C"
+    ],
+    "rationale": {
+      "A": "这里不是默认大小写敏感比较。",
+      "B": "b 与 a 不相等。",
+      "C": "a 与 A 在提供的比较器下相等，b 是另一个等价类。",
+      "D": "Distinct 有接受比较器的重载。"
+    },
+    "takeaway": "去重按相等与哈希契约工作；不要把当前输出次序当成额外排序承诺。",
+    "learn": [
+      "docs/07-linq.md"
+    ],
+    "sources": [
+      {
+        "title": "Enumerable.Distinct",
+        "url": "https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.distinct?view=net-10.0"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "checks": [
+        "Q107"
+      ],
+      "note": "断言给定样例的返回值或异常，并结合官方契约核对干扰项；不据此推广性能、跨平台 ABI 或其他输入。"
+    },
+    "explanation": {
+      "principle": "Distinct 根据指定的相等与哈希策略保留不同等价类，不是逐字节文本比较，也不是排序操作。",
+      "steps": [
+        "OrdinalIgnoreCase 把 a 和 A 视为一个等价类。",
+        "b 属于另一类，所以不同类数量为 2，而非三个原始拼写的数量。"
+      ],
+      "boundary": "本题只依赖数量，不依赖输出次序；标识比较策略应与字典、分组等操作一致。"
+    }
+  },
+  {
+    "id": "Q108",
+    "title": "ToDictionary 与重复键",
+    "kind": "single",
+    "tier": "core",
+    "topics": [
+      "LINQ",
+      "字典"
+    ],
+    "scenario": "",
+    "prompt": "使用 LINQ to Objects。DuplicateDictionary() 的结果是什么？",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Queries.cs",
+        "region": "Q108"
+      }
+    ],
+    "options": {
+      "A": "字典保留值 2，后者自动覆盖前者。",
+      "B": "字典保留值 1，后者自动忽略。",
+      "C": "生成含两个 same 键的字典。",
+      "D": "抛出 ArgumentException。"
+    },
+    "answers": [
+      "D"
+    ],
+    "rationale": {
+      "A": "索引赋值的覆盖行为不等于 ToDictionary 的契约。",
+      "B": "该转换不会默认选择第一项。",
+      "C": "Dictionary 中相等键不能作为两个独立键同时存在。",
+      "D": "ToDictionary 遇到比较器认定的重复键会抛出 ArgumentException。"
+    },
+    "takeaway": "需要选首项、末项或合并时，先显式分组或累计，并记录业务规则。",
+    "learn": [
+      "docs/07-linq.md"
+    ],
+    "sources": [
+      {
+        "title": "Enumerable.ToDictionary",
+        "url": "https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.todictionary?view=net-10.0"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "checks": [
+        "Q108"
+      ],
+      "note": "断言给定样例的返回值或异常，并结合官方契约核对干扰项；不据此推广性能、跨平台 ABI 或其他输入。"
+    },
+    "explanation": {
+      "principle": "ToDictionary 把每项加入唯一键映射，重复键是输入冲突，不默认覆盖、忽略或累加。",
+      "steps": [
+        "第一项加入 same→1；第二项使用相同比较键 same。",
+        "因为键已存在，转换抛出 ArgumentException，无法得到含两个相等键的字典。"
+      ],
+      "boundary": "选择首项、末项或聚合值属于业务策略，需先分组或显式累计；不能套用索引赋值的覆盖行为。"
+    }
+  },
+  {
+    "id": "Q109",
+    "title": "First 与 Single 的数量要求",
+    "kind": "single",
+    "tier": "core",
+    "topics": [
+      "LINQ",
+      "基数"
+    ],
+    "scenario": "",
+    "prompt": "使用 LINQ to Objects。SelectOne() 返回什么？",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Queries.cs",
+        "region": "Q109"
+      }
+    ],
+    "options": {
+      "A": "(4, true)",
+      "B": "(4, false)",
+      "C": "(0, true)",
+      "D": "First 与 Single 都因重复而抛出异常"
+    },
+    "answers": [
+      "A"
+    ],
+    "rationale": {
+      "A": "First 返回第一项；Single 要求恰有一项，两个相同值仍违反数量约束。",
+      "B": "Single 不是 Distinct 后再取唯一值。",
+      "C": "非空序列的 First 返回首项 4。",
+      "D": "First 不验证只有一项。"
+    },
+    "takeaway": "用 Single 表达唯一性约束，用 First 表达选首项；OrDefault 也不消除 Single 的多项失败。",
+    "learn": [
+      "docs/07-linq.md"
+    ],
+    "sources": [
+      {
+        "title": "Enumerable.First",
+        "url": "https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.first?view=net-10.0"
+      },
+      {
+        "title": "Enumerable.Single",
+        "url": "https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.single?view=net-10.0"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "checks": [
+        "Q109"
+      ],
+      "note": "断言给定样例的返回值或异常，并结合官方契约核对干扰项；不据此推广性能、跨平台 ABI 或其他输入。"
+    },
+    "explanation": {
+      "principle": "First 表达取首项；Single 表达序列恰有一项。唯一性检查针对项数，不针对不同值的数量。",
+      "steps": [
+        "values 非空，First 直接返回第一个 4。",
+        "Single 发现第二项，即使也为 4，仍违反唯一项要求并抛异常，rejected 为 true。"
+      ],
+      "boundary": "SingleOrDefault 只增加空输入默认值行为，多项仍失败；若要唯一不同值，需明确加入去重语义。"
+    }
+  },
+  {
+    "id": "Q110",
+    "title": "Any 与枚举次数",
+    "kind": "single",
+    "tier": "core",
+    "topics": [
+      "LINQ",
+      "Any"
+    ],
+    "scenario": "",
+    "prompt": "使用 LINQ to Objects。Existential() 返回什么？",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Queries.cs",
+        "region": "Q110"
+      }
+    ],
+    "options": {
+      "A": "(true, 3)",
+      "B": "(true, 1)",
+      "C": "(false, 3)",
+      "D": "(true, 0)"
+    },
+    "answers": [
+      "B"
+    ],
+    "rationale": {
+      "A": "本题管线无需遍历剩余两个元素。",
+      "B": "带 Where 的序列在产生第一个元素后，Any 就能确定结果并停止枚举。",
+      "C": "第一个值 2 满足谓词，结果为 true。",
+      "D": "本题需执行 Where 谓词才能找到首个匹配元素。"
+    },
+    "takeaway": "用 Any 表达存在性；不要依赖短路查询来执行每项副作用。",
+    "learn": [
+      "docs/07-linq.md"
+    ],
+    "sources": [
+      {
+        "title": "Enumerable.Any",
+        "url": "https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.any?view=net-10.0"
+      },
+      {
+        "title": "Enumerable.Where",
+        "url": "https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.where?view=net-10.0"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "checks": [
+        "Q110"
+      ],
+      "note": "断言给定样例的返回值或异常，并结合官方契约核对干扰项；不据此推广性能、跨平台 ABI 或其他输入。"
+    },
+    "explanation": {
+      "principle": "Any 回答存在性，一旦得到一个元素就有足够信息停止；它不会为副作用保证完整遍历。",
+      "steps": [
+        "Where 检查第一个值 2，递增 calls 一次且条件为 true，产生第一项。",
+        "Any 立即返回 true，后续 4、6 不再检查，因此 calls 为 1。"
+      ],
+      "boundary": "不能把日志、写入等必做工作藏在短路谓词中；远程查询提供程序的执行方式也需另看契约。"
+    }
+  },
+  {
+    "id": "Q111",
+    "title": "Aggregate 的种子与空序列",
+    "kind": "single",
+    "tier": "core",
+    "topics": [
+      "LINQ",
+      "聚合"
+    ],
+    "scenario": "",
+    "prompt": "使用 LINQ to Objects。EmptyAggregate() 返回什么？",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Queries.cs",
+        "region": "Q111"
+      }
+    ],
+    "options": {
+      "A": "(0, false)",
+      "B": "(10, false)",
+      "C": "(10, true)",
+      "D": "带种子的调用也抛出异常。"
+    },
+    "answers": [
+      "C"
+    ],
+    "rationale": {
+      "A": "不是所有聚合都把空序列映射为数字零。",
+      "B": "无 seed 的重载拒绝空序列。",
+      "C": "带 seed 的 Aggregate 对空序列返回 seed；无 seed 的重载没有首项可作累计初值，会抛出异常。",
+      "D": "带 seed 的重载可以直接返回初始值。"
+    },
+    "takeaway": "为归约选定合适的单位元或初值；Sum、Aggregate 和其他聚合的空输入契约分别核对。",
+    "learn": [
+      "docs/07-linq.md"
+    ],
+    "sources": [
+      {
+        "title": "Enumerable.Aggregate",
+        "url": "https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.aggregate?view=net-10.0"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "checks": [
+        "Q111"
+      ],
+      "note": "断言给定样例的返回值或异常，并结合官方契约核对干扰项；不据此推广性能、跨平台 ABI 或其他输入。"
+    },
+    "explanation": {
+      "principle": "Aggregate 有种子时从该值开始累计，无种子时需要用首项作初值；空序列能否成立由重载决定。",
+      "steps": [
+        "带种子的空序列不调用累计函数，直接返回 10。",
+        "无种子重载没有首项可用，抛出 InvalidOperationException，因此结果为 10、true。"
+      ],
+      "boundary": "不同聚合运算的空输入规则并不统一；应选择符合业务含义的初值或显式处理缺失。"
+    }
+  },
+  {
+    "id": "Q112",
+    "title": "Zip 与不同长度的序列",
+    "kind": "single",
+    "tier": "core",
+    "topics": [
+      "LINQ",
+      "Zip"
+    ],
+    "scenario": "",
+    "prompt": "使用 LINQ to Objects。ZipRows() 返回什么？",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Queries.cs",
+        "region": "Q112"
+      }
+    ],
+    "options": {
+      "A": "\"1:a,2:b,3:\"",
+      "B": "因长度不同而抛出异常。",
+      "C": "\"1:a,1:b,2:a,2:b,3:a,3:b\"",
+      "D": "\"1:a,2:b\""
+    },
+    "answers": [
+      "D"
+    ],
+    "rationale": {
+      "A": "Zip 不为缺失项补默认标签。",
+      "B": "普通 Zip 不验证两侧长度相同。",
+      "C": "这是位置配对，不是笛卡尔积。",
+      "D": "Zip 按位置配对，只能产出两侧都存在的两对元素。"
+    },
+    "takeaway": "业务要求等长时另做验证；不要把 Zip 的截断当成输入完整性检查。",
+    "learn": [
+      "docs/07-linq.md"
+    ],
+    "sources": [
+      {
+        "title": "Enumerable.Zip",
+        "url": "https://learn.microsoft.com/en-us/dotnet/api/system.linq.enumerable.zip?view=net-10.0"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "checks": [
+        "Q112"
+      ],
+      "note": "断言给定样例的返回值或异常，并结合官方契约核对干扰项；不据此推广性能、跨平台 ABI 或其他输入。"
+    },
+    "explanation": {
+      "principle": "Zip 按位置配对，只能在两侧都还有元素时产生下一项；它不补缺失值，也不自动验证长度一致。",
+      "steps": [
+        "第一对为 1:a，第二对为 2:b。",
+        "标签已耗尽，第三个 ID 无法配对，结果为 1:a,2:b。"
+      ],
+      "boundary": "若截断会丢失重要数据，应另外检查等长；需要所有两两组合时应使用不同的查询结构。"
+    }
+  },
+  {
+    "id": "Q113",
+    "title": "表达式树的结构与执行",
+    "kind": "single",
+    "tier": "deep",
+    "topics": [
+      "表达式树",
+      "Lambda"
+    ],
+    "scenario": "",
+    "prompt": "代码已导入 System.Linq.Expressions。InspectExpression() 返回什么？",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Queries.cs",
+        "region": "Q113"
+      }
+    ],
+    "options": {
+      "A": "(\"Add\", 3)",
+      "B": "(\"Invoke\", 3)",
+      "C": "(\"Add\", 2)",
+      "D": "不能编译：lambda 只能转换为委托。"
+    },
+    "answers": [
+      "A"
+    ],
+    "rationale": {
+      "A": "Expression<Func<int,int>> 保存加法结构，Body 为 Add；Compile 生成可执行委托，传 2 得 3。",
+      "B": "Body 是 x + 1 的运算节点，不是调用节点。",
+      "C": "编译后的委托执行加法。",
+      "D": "支持的表达式 lambda 可以转换为相应表达式树类型。"
+    },
+    "takeaway": "委托是可调用行为，表达式树是可检查结构；可建树不代表任意查询提供程序都能翻译。",
+    "learn": [
+      "docs/07-linq.md"
+    ],
+    "sources": [
+      {
+        "title": "表达式树",
+        "url": "https://learn.microsoft.com/zh-cn/dotnet/csharp/advanced-topics/expression-trees/"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "checks": [
+        "Q113"
+      ],
+      "note": "断言给定样例的返回值或异常，并结合官方契约核对干扰项；不据此推广性能、跨平台 ABI 或其他输入。"
+    },
+    "explanation": {
+      "principle": "委托表示可调用行为，Expression<TDelegate> 表示可检查的表达式节点结构；Compile 再把支持的树转换为可执行委托。",
+      "steps": [
+        "x=>x+1 的 Body 是加法节点，所以 NodeType 为 Add，不是 Invoke。",
+        "编译并传入 2 后执行加一，得到 3，结果为 Add、3。"
+      ],
+      "boundary": "能构建表达式树不代表任意数据库提供程序能翻译其中的节点；还需满足目标提供程序能力。"
+    }
+  },
+  {
+    "id": "Q114",
+    "title": "表达式树的修改方式",
+    "kind": "single",
+    "tier": "deep",
+    "topics": [
+      "表达式树",
+      "不可变节点"
+    ],
+    "scenario": "",
+    "prompt": "代码已导入 System.Linq.Expressions。RebuildExpression() 返回什么？",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Queries.cs",
+        "region": "Q114"
+      }
+    ],
+    "options": {
+      "A": "(-1, -1)",
+      "B": "(3, -1)",
+      "C": "(3, 3)",
+      "D": "因复用节点而抛出异常。"
+    },
+    "answers": [
+      "B"
+    ],
+    "rationale": {
+      "A": "构建新根不修改旧根。",
+      "B": "Subtract 新建根节点并复用原子节点；原来的 Add 保留，两个树分别计算 1+2 与 1-2。",
+      "C": "新根明确使用 Subtract。",
+      "D": "不可变表达式节点可以被多个树复用。"
+    },
+    "takeaway": "树转换应返回新树，可复用不变子树；别把它等同于原地修改可变 AST。",
+    "learn": [
+      "docs/07-linq.md"
+    ],
+    "sources": [
+      {
+        "title": "转换表达式树",
+        "url": "https://learn.microsoft.com/zh-cn/dotnet/csharp/advanced-topics/expression-trees/expression-trees-translating"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "checks": [
+        "Q114"
+      ],
+      "note": "断言给定样例的返回值或异常，并结合官方契约核对干扰项；不据此推广性能、跨平台 ABI 或其他输入。"
+    },
+    "explanation": {
+      "principle": "表达式节点不可变，转换通过构建新节点完成；复用子节点不会改变原树，也不要求复制整个结构。",
+      "steps": [
+        "original 根为 Add，两个常量仍为 1、2；replacement 以相同子节点建立新的 Subtract 根。",
+        "分别执行原树与新树，得到 3 和 -1，原树没有被改写。"
+      ],
+      "boundary": "可通过访问器递归重建需要变化的部分；不要把节点工厂调用当作对可变 AST 的原地修改。"
+    }
+  },
+  {
+    "id": "Q115",
+    "title": "nameof 与属性访问",
+    "kind": "single",
+    "tier": "core",
+    "topics": [
+      "nameof",
+      "编译期"
+    ],
+    "scenario": "",
+    "prompt": "NameWithoutRead() 返回什么？",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Queries.cs",
+        "region": "Q115"
+      }
+    ],
+    "options": {
+      "A": "(\"row\", 1)",
+      "B": "(\"Name\", 1)",
+      "C": "(\"Name\", 0)",
+      "D": "(\"tracked.Name\", 0)"
+    },
+    "answers": [
+      "C"
+    ],
+    "rationale": {
+      "A": "nameof 取名称而非属性的值。",
+      "B": "名称解析不对访问器求值。",
+      "C": "nameof 在编译期得到成员的非限定名称，不执行 getter。",
+      "D": "nameof 返回最后的成员名称，不返回完整表达式文本。"
+    },
+    "takeaway": "用 nameof 消除名称字符串的拼写风险；它不负责运行时反射或读取对象。",
+    "learn": [
+      "docs/12-runtime.md"
+    ],
+    "sources": [
+      {
+        "title": "nameof 表达式",
+        "url": "https://learn.microsoft.com/zh-cn/dotnet/csharp/language-reference/operators/nameof"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "checks": [
+        "Q115"
+      ],
+      "note": "断言给定样例的返回值或异常，并结合官方契约核对干扰项；不据此推广性能、跨平台 ABI 或其他输入。"
+    },
+    "explanation": {
+      "principle": "nameof 在编译期取得符号的非限定名称，里面看似成员访问的表达式不会在运行时求值。",
+      "steps": [
+        "nameof(tracked.Name) 解析属性名 Name，不读取属性值 row。",
+        "getter 未被调用，Reads 保持 0，故结果为 Name、0。"
+      ],
+      "boundary": "nameof 可辅助重构名称字符串，却不是反射查询或表达式文本输出，也不证明运行时成员一定可访问。"
+    }
+  },
+  {
+    "id": "Q116",
+    "title": "声明类型与对象实际类型",
+    "kind": "single",
+    "tier": "core",
+    "topics": [
+      "反射",
+      "Type"
+    ],
+    "scenario": "",
+    "prompt": "RuntimeType() 返回什么？",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Queries.cs",
+        "region": "Q116"
+      }
+    ],
+    "options": {
+      "A": "(\"Object\", \"Object\", true)",
+      "B": "(\"String\", \"String\", true)",
+      "C": "(\"Object\", \"String\", false)",
+      "D": "(\"Object\", \"String\", true)"
+    },
+    "answers": [
+      "D"
+    ],
+    "rationale": {
+      "A": "object 变量并未把字符串对象转换为 Object 实例。",
+      "B": "typeof(object) 不查看变量当前装的是哪个对象。",
+      "C": "object 是 string 的基类，赋值兼容成立。",
+      "D": "typeof 指定静态类型；GetType 取得对象的运行时类型；string 可以赋给 object。"
+    },
+    "takeaway": "区分类型描述、实例发现与赋值兼容；反射驱动的构造还要考虑裁剪与 AOT。",
+    "learn": [
+      "docs/12-runtime.md"
+    ],
+    "sources": [
+      {
+        "title": "Object.GetType",
+        "url": "https://learn.microsoft.com/zh-cn/dotnet/api/system.object.gettype?view=net-10.0"
+      },
+      {
+        "title": "Type.IsAssignableFrom",
+        "url": "https://learn.microsoft.com/zh-cn/dotnet/api/system.type.isassignablefrom?view=net-10.0"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "checks": [
+        "Q116"
+      ],
+      "note": "断言给定样例的返回值或异常，并结合官方契约核对干扰项；不据此推广性能、跨平台 ABI 或其他输入。"
+    },
+    "explanation": {
+      "principle": "typeof 描述源码指定的类型，GetType 描述实际对象类型，IsAssignableFrom 判断类型之间的赋值兼容方向。",
+      "steps": [
+        "变量声明为 object，但引用的对象仍是 string，所以两个名称为 Object、String。",
+        "object 可接收 string 对象，object.IsAssignableFrom(string) 为 true，结果为 Object、String、true。"
+      ],
+      "boundary": "对象可能为 null，此时不能调用 GetType；获取类型也不自动保证反射构造在裁剪或 AOT 下可行。"
+    }
+  },
+  {
+    "id": "Q117",
+    "title": "自定义特性与校验行为",
+    "kind": "single",
+    "tier": "core",
+    "topics": [
+      "特性",
+      "反射"
+    ],
+    "scenario": "",
+    "prompt": "代码已导入 System.Reflection。ReadAttribute() 返回什么？只讨论所示自定义特性，没有外部校验框架。",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Queries.cs",
+        "region": "Q117"
+      }
+    ],
+    "options": {
+      "A": "(0, 1, -1)",
+      "B": "(1, 1, -1)",
+      "C": "(0, 1, 0)",
+      "D": "给 Value 赋 -1 时抛出异常。"
+    },
+    "answers": [
+      "A"
+    ],
+    "rationale": {
+      "A": "创建 Measurement 不会实例化标注特性；反射读取时实例化一次。特性没有校验 setter 的实现，所以值仍为 -1。",
+      "B": "特性的构造不是创建被标注对象的自动步骤。",
+      "C": "反射读取特性不会自动改写属性值。",
+      "D": "所示属性是自动属性，没有执行 Positive 校验的代码。"
+    },
+    "takeaway": "区分特性声明与消费者；框架校验、路由和序列化行为依赖具体读取逻辑。",
+    "learn": [
+      "docs/12-runtime.md"
+    ],
+    "sources": [
+      {
+        "title": "使用反射访问特性",
+        "url": "https://learn.microsoft.com/zh-cn/dotnet/csharp/advanced-topics/reflection-and-attributes/accessing-attributes-by-using-reflection"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "checks": [
+        "Q117"
+      ],
+      "note": "断言给定样例的返回值或异常，并结合官方契约核对干扰项；不据此推广性能、跨平台 ABI 或其他输入。"
+    },
+    "explanation": {
+      "principle": "特性是供编译工具或运行时消费者读取的元数据；标注本身不会给普通 setter 注入校验逻辑。",
+      "steps": [
+        "创建 Measurement 并赋 -1 时没有读取特性，构造计数仍为 0，属性接受 -1。",
+        "GetCustomAttribute 实例化所示特性一次，计数变为 1，却没有执行校验，结果为 0、1、-1。"
+      ],
+      "boundary": "校验框架可以读取特性并实施规则，但必须有明确消费者；读取元数据不会自动回滚或修改属性。"
+    }
+  },
+  {
+    "id": "Q118",
+    "title": "反射调用与目标异常",
+    "kind": "single",
+    "tier": "core",
+    "topics": [
+      "反射",
+      "异常"
+    ],
+    "scenario": "",
+    "prompt": "代码已导入 System.Reflection。ReflectionFailure() 返回什么？",
+    "code": [
+      {
+        "path": "tests/Quiz.Checks/Queries.cs",
+        "region": "Q118"
+      }
+    ],
+    "options": {
+      "A": "false：目标异常被吞掉。",
+      "B": "true",
+      "C": "直接抛出 InvalidOperationException，catch 不会捕获。",
+      "D": "抛出 MissingMethodException。"
+    },
+    "answers": [
+      "B"
+    ],
+    "rationale": {
+      "A": "catch 可检查包装异常内部的目标异常。",
+      "B": "这里的 MethodInfo.Invoke 将目标方法的异常包装为 TargetInvocationException，InnerException 为原异常。",
+      "C": "普通 MethodInfo.Invoke 的目标异常通过包装传播。",
+      "D": "代码可找到公开实例方法 Run。"
+    },
+    "takeaway": "日志应区分反射调用错误和目标方法错误；检查 InnerException，重新抛出时保留原堆栈。",
+    "learn": [
+      "docs/12-runtime.md"
+    ],
+    "sources": [
+      {
+        "title": "MethodBase.Invoke",
+        "url": "https://learn.microsoft.com/en-us/dotnet/api/system.reflection.methodbase.invoke?view=net-10.0"
+      }
+    ],
+    "verification": {
+      "kind": "runtime",
+      "checks": [
+        "Q118"
+      ],
+      "note": "断言给定样例的返回值或异常，并结合官方契约核对干扰项；不据此推广性能、跨平台 ABI 或其他输入。"
+    },
+    "explanation": {
+      "principle": "普通 MethodInfo.Invoke 的目标方法抛异常时，以 TargetInvocationException 包装目标异常；调用机制错误与业务异常要分层诊断。",
+      "steps": [
+        "GetMethod 找到公开 Run，反射调用进入目标方法并抛出 InvalidOperationException。",
+        "catch 捕获包装异常，InnerException 保留原类型，检查结果为 true。"
+      ],
+      "boundary": "本题使用所示普通重载；记录或重新传播目标错误时需保留内部异常信息和堆栈，不能仅报告包装消息。"
+    }
+  },
+  {
+    "id": "Q119",
+    "title": "本机字符串编码必须匹配 ABI",
+    "kind": "single",
+    "tier": "deep",
+    "topics": [
+      "互操作",
+      "字符串封送"
+    ],
+    "scenario": "一个跨平台 C 函数接收只读、以零结尾的 UTF-8 char*，只在同步调用期间借用；没有内嵌 NUL。项目准备用 LibraryImport 的 string 参数包装它。",
+    "prompt": "以下哪个设计方向与这些已知前提匹配？假设函数名和调用约定另已正确声明。",
+    "code": [],
+    "options": {
+      "A": "改为 StringMarshalling.Utf16，因为 C# string 总是 UTF-16。",
+      "B": "依赖平台默认 ANSI，便能保证每个平台都使用同一编码。",
+      "C": "显式选择 StringMarshalling.Utf8，并按声明的同步借用期限使用；其余 ABI 和错误契约仍需核对。",
+      "D": "把托管 string 的首字符地址永久交给 C 库保存。"
+    },
+    "answers": [
+      "C"
+    ],
+    "rationale": {
+      "A": "托管表示不决定本机 char* 需要的编码。",
+      "B": "默认 ANSI 不能替代明确的跨平台 UTF-8 契约。",
+      "C": "目标接口明确要求 UTF-8，LibraryImport 的字符串封送应明确匹配该编码；借用不能自动延长到调用结束后。",
+      "D": "前提只允许同步借用，临时封送或固定地址不提供永久生命周期。"
+    },
+    "takeaway": "先核对本机 ABI、编码、所有权和错误规则，再选择封送方案；SafeHandle 解决句柄寿命，不自动解决所有 ABI 问题。",
+    "learn": [
+      "docs/12-runtime.md"
+    ],
+    "sources": [
+      {
+        "title": "本机互操作最佳做法",
+        "url": "https://learn.microsoft.com/zh-cn/dotnet/standard/native-interop/best-practices"
+      },
+      {
+        "title": "StringMarshalling",
+        "url": "https://learn.microsoft.com/en-us/dotnet/api/system.runtime.interopservices.stringmarshalling?view=net-10.0"
+      }
+    ],
+    "verification": {
+      "kind": "documentation",
+      "note": "目标接口明确要求 UTF-8，LibraryImport 的字符串封送应明确匹配该编码；借用不能自动延长到调用结束后。 本题人工核对官方契约，未声称执行跨程序集或本机库实验。"
+    },
+    "explanation": {
+      "principle": "本机接口的字符串编码由 ABI 契约决定，托管 string 的 UTF-16 表示不会替 C 函数决定 char* 编码或使用期限。",
+      "steps": [
+        "目标明确要求零结尾 UTF-8，LibraryImport 应显式设置 Utf8，使封送字节符合接收方约定。",
+        "前提只在同步调用期间借用，调用结束后不能继续保留临时地址；函数名、调用约定和错误处理仍需核对。"
+      ],
+      "boundary": "内嵌 NUL、长期保留指针或所有权转移会要求不同设计；SafeHandle 不能替代这些字符串与 ABI 规则。"
+    }
+  },
+  {
+    "id": "Q120",
+    "title": "分析器与源生成器的职责",
+    "kind": "single",
+    "tier": "deep",
+    "topics": [
+      "Roslyn",
+      "编译工具"
+    ],
+    "scenario": "项目想检查违规 API 调用，并为带特性的类型生成配套代码。",
+    "prompt": "哪项职责分配符合 Roslyn 的工具模型？",
+    "code": [],
+    "options": {
+      "A": "源生成器直接修改原语法树，分析器只在运行时执行。",
+      "B": "标注特性后运行时自动产生缺少的方法，不需要编译。",
+      "C": "源生成器生成的源码可以跳过类型检查。",
+      "D": "分析器产生诊断；源生成器向编译加入新源码；改写用户源码通常由代码修复或重构负责。"
+    },
+    "answers": [
+      "D"
+    ],
+    "rationale": {
+      "A": "生成器追加源码，分析器是静态分析工具。",
+      "B": "特性自身不实现动态生成方法的行为。",
+      "C": "生成代码不是绕过类型规则的特殊通道。",
+      "D": "分析器通过编译模型检查代码，生成器向编译追加源码；生成结果仍须参与正常编译。"
+    },
+    "takeaway": "先使用现有分析器；生成器适合重复的静态代码，不能把它当成任意源码重写器或运行时脚本。",
+    "learn": [
+      "docs/12-runtime.md"
+    ],
+    "sources": [
+      {
+        "title": "Roslyn SDK",
+        "url": "https://learn.microsoft.com/zh-cn/dotnet/csharp/roslyn-sdk/"
+      },
+      {
+        "title": "Roslyn 源生成器设计",
+        "url": "https://github.com/dotnet/roslyn/blob/main/docs/features/source-generators.md"
+      }
+    ],
+    "verification": {
+      "kind": "documentation",
+      "note": "分析器通过编译模型检查代码，生成器向编译追加源码；生成结果仍须参与正常编译。 本题人工核对官方契约，未声称执行跨程序集或本机库实验。"
+    },
+    "explanation": {
+      "principle": "Roslyn 分析器检查编译模型并产生诊断，源生成器把新源码加入编译；它们不是运行时修改器。",
+      "steps": [
+        "违规 API 检查适合分析器；根据带特性的类型生成配套成员，适合向编译追加源码。",
+        "新源码仍接受正常类型检查；改写用户文件通常由代码修复或重构承担，而非生成器原地改树。"
+      ],
+      "boundary": "特性只是输入标记，不会自行产生方法；应先确认现有工具能否满足需求，再承担自定义生成维护成本。"
+    }
+  }
+]
