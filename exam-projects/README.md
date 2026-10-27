@@ -1,5 +1,9 @@
 # 考试题目学习项目
 
+在仓库根目录先进入 `exam-projects`。Windows 运行 `./setup.cmd`，然后运行 `./.tools/dotnet11/dotnet.exe run --project Q04`；Linux / macOS 运行 `bash setup.sh`，然后运行 `./.tools/dotnet11/dotnet run --project Q04`。Q04 输出 `-2,-1`，退出码为 0。初始化及 VS Code 调试步骤见[仓库使用说明](../README.md#每题一个-c-工程)。
+
+11 道题保留原始编译错误，整个解决方案构建会报告这些错误；可单独构建、运行其他题。Q117 按题设使用 `-c Release`。
+
 基础 120 题与扩展 40 题，共 160 题。工程目录、工程名称 Q01–Q160 与考试系统显示号一致。
 
 | 考试号 / 工程 | 原题号 | 分组 | 题目 |
